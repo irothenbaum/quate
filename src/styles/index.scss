@@ -1,0 +1,7 @@
+@use './typography';
+@forward "./layout";
+@forward "./mixins";
+
+body, html {
+  @include typography.body-text()
+}
