@@ -2,33 +2,6 @@
   box-shadow: 0 calc($amount/3) $amount rgba(0, 0, 0, $opacity);
 }
 
-@mixin pill() {
-  background-color: var(--color-primary);
-  color: var(--color-text-contrast);
-  padding: var(--space-xs) var(--space-sm);
-  border-radius: var(--border-radius-sm);
-  font-size: var(--font-size-sm);
-}
-
-@mixin pill-secondary() {
-  @include pill();
-  border: 1px solid var(--color-grey);
-  border-bottom-width: 2px;
-  background-color: var(--color-card-bg);
-  color: var(--color-text);
-}
-
-@mixin content-card {
-  width: 100%;
-  max-width: var(--content-max-width);
-  padding: var(--space-md) var(--space-md);
-  background-color: var(--color-card-bg);
-  margin: 0 auto;
-  border-radius: var(--border-radius-md);
-  overflow: hidden;
-  @include drop-shadow();
-}
-
 @mixin hero-center {
   height: 100%;
   width: 100%;

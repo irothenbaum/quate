@@ -3,11 +3,16 @@ import type {RouteRecordRaw} from 'vue-router'
 import * as Routes from '@/constants/routes'
 import Landing from '@/components/Landing.vue'
 import NotFound from '@/components/NotFound.vue'
+import Play from '@/components/Play.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: Routes.ROUTE_LANDING,
     component: Landing,
+  },
+  {
+    path: Routes.ROUTE_PLAY_QUATE,
+    component: Play,
   },
   {
     path: '/:pathMatch(.*)*',

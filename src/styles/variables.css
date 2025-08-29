@@ -26,6 +26,7 @@
     --color-grey: #aaa;
     --color-dark-grey: #666;
     --color-light-grey: #e0e0e0;
+
     --color-card-bg: #fff;
     --color-page-bg: #f0f0f0;
     --color-primary: #4272ff;
@@ -59,4 +60,6 @@
     --screen-extra-large-max: 1920px;
 
     --content-max-width: var(--screen-medium-max);
+
+    --row-height: 4rem;
 }
