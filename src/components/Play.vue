@@ -16,7 +16,8 @@ const difficulty = computed<number>(() => parseInt(route.params.difficulty as st
 <style scoped lang="scss">
 @use '../styles';
 
-.landing-page {
-  @include styles.hero-center();
+.play {
+  height: 100%;
+  width: 100%;
 }
 </style>

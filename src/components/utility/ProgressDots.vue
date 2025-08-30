@@ -36,7 +36,7 @@ $dotSize: var(--space-md);
     height: $dotSize;
     width: $dotSize;
     border-radius: calc($dotSize / 2);
-    background-color: var(--color-card-bg);
+    background-color: var(--color-white);
     transition: all 0.2s ease;
     opacity: 0.8;
 

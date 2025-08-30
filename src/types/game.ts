@@ -20,7 +20,7 @@ export interface TermStep {
 export interface GameLevel {
   start: number
   target: number
-  steps: Array<TermStep>
+  steps: Array<Array<TermStep>> // columns and rows
 }
 
 export interface GameState {
@@ -33,10 +33,8 @@ export interface GameState {
   level_state?: GameLevel // when the game's over this may be empty
 }
 
-export interface GameStore {
-  settings: Ref<GameSettings>
-  state: Ref<GameState>
-
+export interface GameStore extends GameSettings, GameState {
   startNextLevel: (l: GameLevel) => void
   increaseScore: (u: number, b: number) => void
+  handleClickTerm: (term: TermStep, column: number, row: number) => void
 }

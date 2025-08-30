@@ -47,7 +47,7 @@ function handleCopy() {
   i {
     padding: var(--space-sm);
     border: 1px solid var(--color-light-grey);
-    background-color: var(--color-card-bg);
+    background-color: var(--color-white);
     border-radius: var(--border-radius-sm);
     cursor: pointer;
     transition: all 0.2s ease;
