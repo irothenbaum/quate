@@ -8,14 +8,12 @@ const emit = defineEmits<{
 
 const gameStore = useGameStore()
 
-const {level_number, score} = storeToRefs(gameStore)
+const {levels_completed, score} = storeToRefs(gameStore)
 </script>
 
 <template>
   <div class="hud-top">
-    <div class="level">
-      {{ level_number }}
-    </div>
+    <div class="level">{{ levels_completed }} + 1</div>
     <div class="score">
       {{ score }}
     </div>

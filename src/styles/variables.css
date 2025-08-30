@@ -32,6 +32,9 @@
   --color-page-bg: var(--color-dark-grey);
   --color-world-bg: var(--color-near-black);
   --color-text: var(--color-white);
+  --color-power-shade: #008eb7;
+  --color-power: #00c4ff;
+  --color-power-tint: #7fddff;
 
   --color-disabled-button: var(--color-light-grey);
   --color-success-shade: var(--app-green-600);

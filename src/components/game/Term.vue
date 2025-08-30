@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import type {TermStep} from '@/types/game.ts'
 
-const props = defineProps<{
-  term: TermStep
-}>()
+const props = withDefaults(
+  defineProps<{
+    term: TermStep
+    isSelected?: boolean
+  }>(),
+  {
+    isSelected: false,
+  },
+)
 
 // Emits definition
 const emit = defineEmits<{
@@ -12,8 +18,11 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="term">
-    <div class="term-inner">{{}}</div>
+  <div :class="{term: true, selected: isSelected}">
+    <div class="term-inner">
+      <span class="operation">{{ term.operation }}</span>
+      <span class="number">{{ term.number }}</span>
+    </div>
   </div>
 </template>
 
@@ -31,5 +40,11 @@ $size: 4rem;
   justify-content: center;
 
   background-color: var(--color-dark-grey);
+  border: 3px solid var(--color-dark-grey);
+
+  &.selected {
+    border-color: var(--color-power);
+    box-shadow: 0 0 10px -5px var(--color-power-tint);
+  }
 }
 </style>

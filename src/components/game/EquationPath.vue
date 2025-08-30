@@ -2,12 +2,6 @@
 import useGameStore from '@/stores/game.ts'
 import {storeToRefs} from 'pinia'
 import Term from '@/components/game/Term.vue'
-import type {TermStep} from '@/types/game.ts'
-
-// Emits definition
-const emit = defineEmits<{
-  (e: 'pause'): void
-}>()
 
 const gameStore = useGameStore()
 const {level_state} = storeToRefs(gameStore)
@@ -16,8 +10,16 @@ const {handleClickTerm} = gameStore
 
 <template>
   <div class="equation-path">
-    <div v-for="(c, i) in level_state.steps" :key="i" class="equation-row">
-      <Term :term="term" v-for="(term, j) in c" :key="j" @click="handleClickTerm(term, i, j)" />
+    <div v-if="level_state" class="equation-path-inner">
+      <div v-for="(col, i) in level_state.steps" :key="i" class="equation-row">
+        <Term
+          :term="term"
+          v-for="(term, j) in col"
+          :key="j"
+          :isSelected="level_state.selected[i] === j"
+          @click="handleClickTerm(term, i, j)"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -28,11 +30,17 @@ const {handleClickTerm} = gameStore
 .equation-path {
   height: 100%;
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  justify-content: space-evenly;
-  align-items: center;
+  overflow: hidden;
+
+  .equation-path-inner {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    justify-content: space-evenly;
+    align-items: center;
+  }
 
   .equation-row {
     display: flex;

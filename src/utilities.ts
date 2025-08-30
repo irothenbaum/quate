@@ -1,6 +1,20 @@
 import {Operation} from '@/types/game.ts'
 import type {TermStep, GameLevel} from '@/types/game.ts'
 
+export function shuffleArray<T>(arr: Array<T>): void {
+  let currentIndex = arr.length
+
+  // While there remain elements to shuffle...
+  while (currentIndex != 0) {
+    // Pick a remaining element...
+    const randomIndex = Math.floor(Math.random() * currentIndex)
+    currentIndex--
+
+    // And swap it with the current element.
+    ;[arr[currentIndex], arr[randomIndex]] = [arr[randomIndex], arr[currentIndex]]
+  }
+}
+
 export function applyTermStep(n: number, t: TermStep): number {
   switch (t.operation) {
     case Operation.add:
@@ -32,7 +46,7 @@ export function lerp(start: number, target: number, ratio: number): number {
 
 function isCleaningDividedBy(n: number, d: number): boolean {
   const product = n / d
-  return product === parseInt(product)
+  return product === Math.floor(product)
 }
 
 const DIVISORS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].reverse()
@@ -41,7 +55,7 @@ function getSingleTermStep(start: number, max: number): TermStep {
   const startRatio = start / max
 
   // determine which operations we can even do based on start/max
-  const validOperations: Array<Operation> = Object.keys(Operation).filter(o => {
+  const validOperations: Array<Operation> = Object.values(Operation).filter(o => {
     switch (o) {
       case Operation.add:
         return startRatio < 0.8
@@ -58,7 +72,7 @@ function getSingleTermStep(start: number, max: number): TermStep {
       case Operation.raise:
         return Math.pow(start, 2) < max
     }
-  })
+  }) as Array<Operation>
 
   const selectedOperation = validOperations[Math.floor(Math.random() * validOperations.length)]
 
@@ -68,6 +82,7 @@ function getSingleTermStep(start: number, max: number): TermStep {
 function generateTermStep(start: number, max: number, op: Operation, decimals: number = 0): TermStep {
   const retVal: TermStep = {
     operation: op,
+    number: 0,
   }
 
   switch (op) {
@@ -85,7 +100,7 @@ function generateTermStep(start: number, max: number, op: Operation, decimals: n
 
     case Operation.divide:
       // find the first (largest) one that cleanly divides it
-      retVal.number = DIVISORS.find(d => isCleaningDividedBy(start, d))
+      retVal.number = DIVISORS.find(d => isCleaningDividedBy(start, d)) || 2
       break
 
     case Operation.raise:
@@ -96,7 +111,7 @@ function generateTermStep(start: number, max: number, op: Operation, decimals: n
   return retVal
 }
 
-export function generateLevel(start: number, max: number, stepCount: number): GameLevel {
+export function generateLevel(start: number, max: number, stepCount: number, totalTerms: number): GameLevel {
   const steps: Array<TermStep> = []
   let target: number = start
 
@@ -106,9 +121,28 @@ export function generateLevel(start: number, max: number, stepCount: number): Ga
     target = applyTermStep(target, nextStep)
   }
 
+  let numberOfFakes = totalTerms - stepCount
+  let minFakeMagnitude = 0
+  const fakes: Array<Array<TermStep>> = new Array(stepCount).fill([])
+  while (numberOfFakes > 0) {
+    // we don't want to push too many to a single row at once
+    // the row with the most fakes should not be more than 2 greater than the smallest
+    const viable = fakes.filter(arr => arr.length < minFakeMagnitude + 2)
+
+    const nextFakeRow = Math.floor(Math.random() * viable.length)
+    viable[nextFakeRow].push(getSingleTermStep(start, Math.floor(Math.random() * max)))
+
+    minFakeMagnitude = fakes.reduce((agr, f) => Math.min(agr, f.length), viable[nextFakeRow].length)
+    numberOfFakes--
+  }
+
+  const mergedSteps = steps.map((s, i) => [...fakes[i], s])
+  shuffleArray(mergedSteps)
+
   return {
     start: start,
-    steps: steps,
+    steps: mergedSteps,
     target: target,
+    selected: [],
   }
 }

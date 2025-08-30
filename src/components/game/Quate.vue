@@ -1,19 +1,11 @@
 <script setup lang="ts">
-import {computed, ref} from 'vue'
+import {computed, ref, watch} from 'vue'
 import HudTop from '@/components/game/HudTop.vue'
 import HudBottom from '@/components/game/HudBottom.vue'
 import useGameStore from '@/stores/game.ts'
 import EquationPath from '@/components/game/EquationPath.vue'
-
-const props = withDefaults(
-  defineProps<{
-    difficulty: number
-    color?: string
-  }>(),
-  {
-    color: 'green',
-  },
-)
+import {generateLevel} from '@/utilities.ts'
+import {storeToRefs} from 'pinia'
 
 // Emits definition
 const emit = defineEmits<{
@@ -21,6 +13,45 @@ const emit = defineEmits<{
 }>()
 
 const gameStore = useGameStore()
+const {level_state, difficulty} = storeToRefs(gameStore)
+const {increaseScore, startNextLevel} = gameStore
+const nextLevelNum = ref<number>(0)
+
+const max = computed(() => difficulty.value + nextLevelNum.value * 10)
+const stepCount = computed(() => Math.ceil((nextLevelNum.value + 1) / 2))
+const totalTerms = computed(() => Math.max(stepCount.value, nextLevelNum.value))
+
+function handleSubmitAnswer() {
+  // TODO: this
+}
+
+function handleLevelComplete() {
+  if (!level_state.value) {
+    return
+  }
+
+  // TODO: calc points
+  const unitPoints = 0
+  const bonusPoints = 0
+  increaseScore(unitPoints, bonusPoints)
+
+  // inc this immediately
+  nextLevelNum.value += 1
+
+  const nextLevel = generateLevel(level_state.value.target, max.value, stepCount.value, totalTerms.value)
+
+  startNextLevel(nextLevel)
+}
+
+watch(
+  () => {},
+  () => {
+    startNextLevel(generateLevel(nextLevelNum.value, max.value, stepCount.value, totalTerms.value))
+  },
+  {
+    immediate: true,
+  },
+)
 </script>
 
 <template>
@@ -30,7 +61,7 @@ const gameStore = useGameStore()
       <div id="path-container">
         <EquationPath />
       </div>
-      <HudBottom />
+      <HudBottom @submit="handleSubmitAnswer()" />
     </div>
   </div>
 </template>
