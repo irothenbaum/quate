@@ -112,13 +112,17 @@ function generateTermStep(start: number, max: number, op: Operation, decimals: n
 }
 
 export function generateLevel(start: number, max: number, stepCount: number, totalTerms: number): GameLevel {
+  console.log('Generating Level', {start, max, stepCount, totalTerms})
+
   const steps: Array<TermStep> = []
   let target: number = start
 
-  while (stepCount > 0) {
+  let stepCounter = stepCount
+  while (stepCounter > 0) {
     const nextStep: TermStep = getSingleTermStep(target, max)
     steps.push(nextStep)
     target = applyTermStep(target, nextStep)
+    stepCounter--
   }
 
   let numberOfFakes = totalTerms - stepCount
@@ -139,10 +143,31 @@ export function generateLevel(start: number, max: number, stepCount: number, tot
   const mergedSteps = steps.map((s, i) => [...fakes[i], s])
   shuffleArray(mergedSteps)
 
+  console.log(
+    'Generated level',
+    {
+      start: start,
+      steps: mergedSteps,
+      target: target,
+      selected: [],
+    },
+    mergedSteps[0][0],
+    start,
+    target,
+  )
+
   return {
     start: start,
     steps: mergedSteps,
     target: target,
     selected: [],
   }
+}
+
+export const operationToLabel = {
+  [Operation.add]: '+',
+  [Operation.subtract]: '-',
+  [Operation.multiply]: 'x',
+  [Operation.divide]: '/',
+  [Operation.raise]: '^',
 }

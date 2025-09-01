@@ -1,5 +1,3 @@
-import type {Ref} from 'vue'
-
 export enum Operation {
   add,
   subtract,
@@ -22,25 +20,4 @@ export interface GameLevel {
   // steps = [[A,B,C],[D,E,F],[G,H,I]]
   // the user selects B, F, G
   // selected = [1,2,0]
-}
-
-export interface GameState {
-  unit_score: Ref<number>
-  bonus_score: Ref<number>
-  health: Ref<number>
-  solutions: Ref<Array<GameLevel>>
-  score: Ref<number> // computed from unit_score + bonus_score
-  levels_completed: Ref<number> // computed from solutions.length + 1
-  level_state: Ref<GameLevel | undefined> // will be empty at the start/end of the game
-}
-
-export interface GameSettings {
-  difficulty: Ref<number>
-}
-
-export interface GameStore extends GameSettings, GameState {
-  startNextLevel: (l: GameLevel) => void
-  increaseScore: (u: number, b: number) => void
-  handleClickTerm: (term: TermStep, column: number, row: number) => void
-  restartGame: () => void
 }

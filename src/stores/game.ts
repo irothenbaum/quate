@@ -1,6 +1,6 @@
 import {ref, computed} from 'vue'
 import {defineStore} from 'pinia'
-import type {GameStore, GameSettings, GameState, GameLevel, TermStep} from '@/types/game.ts'
+import type {GameLevel, TermStep} from '@/types/game.ts'
 
 const STARTING_LEVEL_STATE: GameLevel = {
   start: 0,
@@ -9,7 +9,7 @@ const STARTING_LEVEL_STATE: GameLevel = {
   selected: [],
 }
 
-export default defineStore('game', (): GameStore => {
+export default defineStore('game', () => {
   // --------------------------------------------------------------------
   // STATE
   // --------------------------------------------------------------------
@@ -53,6 +53,7 @@ export default defineStore('game', (): GameStore => {
   }
 
   function handleClickTerm(term: TermStep, column: number, row: number) {
+    console.log('handleClickTerm', {term, column, row})
     if (!level_state.value) {
       return
     }
@@ -66,9 +67,9 @@ export default defineStore('game', (): GameStore => {
     if (nextSelected[column] === row) {
       // deselecting that + any option after
       nextSelected = nextSelected.filter((n, i) => i < column)
+    } else {
+      nextSelected[column] = row
     }
-
-    nextSelected[column] = row
 
     level_state.value = {...level_state.value, selected: nextSelected}
   }

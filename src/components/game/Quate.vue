@@ -1,20 +1,17 @@
 <script setup lang="ts">
-import {computed, ref, watch} from 'vue'
+import {computed, ref, onMounted} from 'vue'
 import HudTop from '@/components/game/HudTop.vue'
 import HudBottom from '@/components/game/HudBottom.vue'
-import useGameStore from '@/stores/game.ts'
+import {useGameStore} from '@/composables/useGameStore.ts'
 import EquationPath from '@/components/game/EquationPath.vue'
 import {generateLevel} from '@/utilities.ts'
-import {storeToRefs} from 'pinia'
 
 // Emits definition
 const emit = defineEmits<{
   (e: 'game-over', data: number | undefined): void
 }>()
 
-const gameStore = useGameStore()
-const {level_state, difficulty} = storeToRefs(gameStore)
-const {increaseScore, startNextLevel} = gameStore
+const {level_state, difficulty, increaseScore, startNextLevel} = useGameStore()
 const nextLevelNum = ref<number>(0)
 
 const max = computed(() => difficulty.value + nextLevelNum.value * 10)
@@ -43,15 +40,9 @@ function handleLevelComplete() {
   startNextLevel(nextLevel)
 }
 
-watch(
-  () => {},
-  () => {
-    startNextLevel(generateLevel(nextLevelNum.value, max.value, stepCount.value, totalTerms.value))
-  },
-  {
-    immediate: true,
-  },
-)
+onMounted(() => {
+  startNextLevel(generateLevel(nextLevelNum.value, max.value, stepCount.value, totalTerms.value))
+})
 </script>
 
 <template>

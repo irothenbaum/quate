@@ -1,23 +1,19 @@
 <script setup lang="ts">
-import useGameStore from '@/stores/game.ts'
-import {storeToRefs} from 'pinia'
+import {useGameStore} from '@/composables/useGameStore.ts'
+
 // Emits definition
 const emit = defineEmits<{
   (e: 'pause'): void
 }>()
 
-const gameStore = useGameStore()
-
-const {levels_completed, score} = storeToRefs(gameStore)
+const {levels_completed, score, level_state} = useGameStore()
 </script>
 
 <template>
   <div class="hud-top">
-    <div class="level">{{ levels_completed }} + 1</div>
-    <div class="score">
-      {{ score }}
-    </div>
-    <div>&nbsp;</div>
+    <div class="level">Level: {{ levels_completed + 1 }}</div>
+    <div v-if="level_state">{{ level_state.target }}</div>
+    <div class="score">Score: {{ score }}</div>
   </div>
 </template>
 

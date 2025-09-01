@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type {TermStep} from '@/types/game.ts'
+import {operationToLabel} from '@/utilities.ts'
 
 const props = withDefaults(
   defineProps<{
@@ -10,17 +11,12 @@ const props = withDefaults(
     isSelected: false,
   },
 )
-
-// Emits definition
-const emit = defineEmits<{
-  (e: 'click'): void
-}>()
 </script>
 
 <template>
   <div :class="{term: true, selected: isSelected}">
     <div class="term-inner">
-      <span class="operation">{{ term.operation }}</span>
+      <span class="operation">{{ operationToLabel[term.operation] }}</span>
       <span class="number">{{ term.number }}</span>
     </div>
   </div>
@@ -32,6 +28,8 @@ const emit = defineEmits<{
 $size: 4rem;
 
 .term {
+  @include styles.no-text-select();
+  cursor: pointer;
   border-radius: 50%;
   height: $size;
   width: $size;

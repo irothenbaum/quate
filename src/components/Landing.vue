@@ -2,16 +2,16 @@
 import Button from './utility/Button.vue'
 import {ROUTE_PLAY_QUATE} from '@/constants/routes.ts'
 import {OUTLINED_VARIANT} from '@/constants/variants.ts'
-import {ref} from 'vue'
 import NumberInput from '@/components/utility/NumberInput.vue'
+import {useGameStore} from '@/composables/useGameStore.ts'
 
-const difficulty = ref<number>(100)
+const {difficulty} = useGameStore()
 </script>
 
 <template>
   <div class="landing-page">
-    <NumberInput :v-model="difficulty" />
-    <RouterLink :to="{name: ROUTE_PLAY_QUATE, params: {difficulty: difficulty}}">
+    <NumberInput v-model="difficulty" />
+    <RouterLink :to="{name: ROUTE_PLAY_QUATE}">
       <Button label="Play" :variant="OUTLINED_VARIANT" />
     </RouterLink>
   </div>

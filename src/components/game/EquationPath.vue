@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import useGameStore from '@/stores/game.ts'
-import {storeToRefs} from 'pinia'
 import Term from '@/components/game/Term.vue'
+import {useGameStore} from '@/composables/useGameStore.ts'
 
-const gameStore = useGameStore()
-const {level_state} = storeToRefs(gameStore)
-const {handleClickTerm} = gameStore
+const {level_state, handleClickTerm} = useGameStore()
 </script>
 
 <template>
