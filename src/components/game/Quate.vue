@@ -12,11 +12,9 @@ const emit = defineEmits<{
 }>()
 
 const {level_state, difficulty, increaseScore, startNextLevel} = useGameStore()
-const nextLevelNum = ref<number>(0)
-
-const max = computed(() => difficulty.value + nextLevelNum.value * 10)
-const stepCount = computed(() => Math.ceil((nextLevelNum.value + 1) / 2))
-const totalTerms = computed(() => Math.max(stepCount.value, nextLevelNum.value))
+const levelNum = ref<number>(8) // levelNum starts at 0 and increases with every completed round
+// it basically matches levels_completed but needs to be separate so we can generate the next level before completing it
+// could possible refactor...
 
 function handleSubmitAnswer() {
   // TODO: this
@@ -33,15 +31,15 @@ function handleLevelComplete() {
   increaseScore(unitPoints, bonusPoints)
 
   // inc this immediately
-  nextLevelNum.value += 1
+  levelNum.value += 1
 
-  const nextLevel = generateLevel(level_state.value.target, max.value, stepCount.value, totalTerms.value)
+  const nextLevel = generateLevel(levelNum.value, difficulty.value, level_state.value.target)
 
   startNextLevel(nextLevel)
 }
 
 onMounted(() => {
-  startNextLevel(generateLevel(nextLevelNum.value, max.value, stepCount.value, totalTerms.value))
+  startNextLevel(generateLevel(levelNum.value, difficulty.value, 0))
 })
 </script>
 
@@ -67,20 +65,30 @@ onMounted(() => {
 
   #world {
     @include styles.flex-column();
-    height: 80%;
+    gap: 0;
+    height: 100%;
     overflow: hidden;
     width: 50vw;
-    box-shadow:
-      0 0 20px rgba(0, 0, 0, 0.3),
-      inset 0 0 15px rgba(0, 0, 0, 0.3),
-      inset 0 0 5px rgba(0, 0, 0, 0.5);
-    border-radius: 30px;
 
     #path-container {
       width: 100%;
       flex: 1;
-      background-color: var(--color-world-bg);
+      background-color: var(--color-world);
       box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+
+      &:after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+      }
+
+      &:before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+      }
     }
   }
 }

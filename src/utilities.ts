@@ -21,7 +21,7 @@ export function applyTermStep(n: number, t: TermStep): number {
       return n + t.number
 
     case Operation.subtract:
-      return n / t.number
+      return n - t.number
 
     case Operation.multiply:
       return n * t.number
@@ -51,7 +51,11 @@ function isCleaningDividedBy(n: number, d: number): boolean {
 
 const DIVISORS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].reverse()
 
-function getSingleTermStep(start: number, max: number): TermStep {
+function getSingleTermStep(levelNum: number, start: number, max: number): TermStep {
+  if (max <= 0) {
+    throw new Error('Max must be > 0')
+  }
+
   const startRatio = start / max
 
   // determine which operations we can even do based on start/max
@@ -61,16 +65,16 @@ function getSingleTermStep(start: number, max: number): TermStep {
         return startRatio < 0.8
 
       case Operation.subtract:
-        return startRatio > 0.2
+        return levelNum >= 4 && startRatio > 0.2
 
       case Operation.multiply:
-        return startRatio < 0.4
+        return levelNum >= 8 && startRatio < 0.4 && start > 0
 
       case Operation.divide:
-        return startRatio > 0.4 && DIVISORS.some(d => isCleaningDividedBy(start, d))
+        return levelNum >= 12 && startRatio > 0.4 && DIVISORS.some(d => isCleaningDividedBy(start, d))
 
       case Operation.raise:
-        return Math.pow(start, 2) < max
+        return levelNum >= 16 && Math.pow(start, 2) < max
     }
   }) as Array<Operation>
 
@@ -87,7 +91,7 @@ function generateTermStep(start: number, max: number, op: Operation, decimals: n
 
   switch (op) {
     case Operation.add:
-      retVal.number = Math.random() * max - start
+      retVal.number = Math.random() * (max - start)
       break
 
     case Operation.subtract:
@@ -111,17 +115,97 @@ function generateTermStep(start: number, max: number, op: Operation, decimals: n
   return retVal
 }
 
-export function generateLevel(start: number, max: number, stepCount: number, totalTerms: number): GameLevel {
-  console.log('Generating Level', {start, max, stepCount, totalTerms})
+const totalTermsSequence = [
+  [1],
+  [2],
+  [2],
+  [2],
+  [2, 1],
+  [2, 1],
+  [2, 1],
+  [3],
+  [3, 1],
+  [3, 1],
+  [3, 1],
+  [2, 2],
+  [2, 2],
+  [2, 2],
+  [3, 2],
+  [3, 2],
+  [3, 2],
+  [1, 3, 1],
+  [1, 3, 1],
+  [1, 3, 1],
+  [2, 2, 1],
+  [2, 2, 1],
+  [2, 2, 1],
+  [2, 2, 2],
+  [2, 2, 2],
+  [2, 2, 2],
+  [2, 3, 2],
+  [2, 3, 2],
+  [2, 3, 2],
+]
+// this function generates level with random term values, but whose term orders are set by the term Sequence array
+export function generateLevelUsingTermSequence(levelNum: number, difficulty: number, start: number): GameLevel {
+  console.log('Generating Level Using Term Sequence', {levelNum, difficulty, start})
+  const max = difficulty + 10 * levelNum
+  const sequence = totalTermsSequence[levelNum]
+  let target: number = start
+  const steps: Array<Array<TermStep>> = []
 
+  for (let i = 0; i < sequence.length; i++) {
+    const totalTermsThisRow = sequence[i]
+    const thisRow: Array<TermStep> = []
+    // first we create the real step
+    const nextStep: TermStep = getSingleTermStep(levelNum, target, max)
+    console.log('Previous target:', target, 'Next step:', nextStep)
+    target = applyTermStep(target, nextStep)
+    console.log('New target:', target)
+    thisRow.push(nextStep)
+
+    // now we create all the fake values (we number the number of terms this row - 1 because 1 is the correct term)
+    for (let j = totalTermsThisRow - 1; j > 0; j--) {
+      thisRow.push(getSingleTermStep(levelNum, start, Math.floor(Math.random() * max)))
+    }
+
+    steps.push(thisRow)
+  }
+
+  const retVal = {
+    start: start,
+    steps: steps,
+    target: target,
+    selected: [],
+  }
+  console.log('Generated level', retVal, steps[0][0], start, target)
+
+  return retVal
+}
+
+// this function generates levels programmatically.
+// The resulting levels and their shape is random
+
+// every 5 levels, we increase the complexity of the number of rows
+const stepCountInterval = 5
+// every 3 levels we increase the number of terms
+const totalTermInterval = 3
+export function generateLevel(levelNum: number, difficulty: number, start: number): GameLevel {
+  console.log('Generating Level', {levelNum, difficulty, start})
+  const max = difficulty + 10 * levelNum
+
+  const stepCount = Math.floor(levelNum / stepCountInterval) + 1
+  const totalTerms = Math.ceil(levelNum / totalTermInterval) + 1
   const steps: Array<TermStep> = []
   let target: number = start
 
   let stepCounter = stepCount
   while (stepCounter > 0) {
-    const nextStep: TermStep = getSingleTermStep(target, max)
+    const nextStep: TermStep = getSingleTermStep(levelNum, target, max)
     steps.push(nextStep)
+    console.log('Previous target:', target, 'Next step:', nextStep)
     target = applyTermStep(target, nextStep)
+    console.log('New target:', target)
     stepCounter--
   }
 
@@ -134,7 +218,7 @@ export function generateLevel(start: number, max: number, stepCount: number, tot
     const viable = fakes.filter(arr => arr.length < minFakeMagnitude + 2)
 
     const nextFakeRow = Math.floor(Math.random() * viable.length)
-    viable[nextFakeRow].push(getSingleTermStep(start, Math.floor(Math.random() * max)))
+    viable[nextFakeRow].push(getSingleTermStep(levelNum, start, Math.floor(Math.random() * max)))
 
     minFakeMagnitude = fakes.reduce((agr, f) => Math.min(agr, f.length), viable[nextFakeRow].length)
     numberOfFakes--
@@ -143,25 +227,15 @@ export function generateLevel(start: number, max: number, stepCount: number, tot
   const mergedSteps = steps.map((s, i) => [...fakes[i], s])
   shuffleArray(mergedSteps)
 
-  console.log(
-    'Generated level',
-    {
-      start: start,
-      steps: mergedSteps,
-      target: target,
-      selected: [],
-    },
-    mergedSteps[0][0],
-    start,
-    target,
-  )
-
-  return {
+  const retVal = {
     start: start,
     steps: mergedSteps,
     target: target,
     selected: [],
   }
+  console.log('Generated level', retVal, mergedSteps[0][0], start, target)
+
+  return retVal
 }
 
 export const operationToLabel = {
