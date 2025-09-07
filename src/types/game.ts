@@ -21,3 +21,10 @@ export interface GameLevel {
   // the user selects B, F, G
   // selected = [1,2,0]
 }
+
+export interface LineCoords {
+  x0: number
+  y0: number
+  x1: number
+  y1: number
+}

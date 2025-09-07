@@ -45,6 +45,7 @@ onMounted(() => {
 
 <template>
   <div id="quate-game">
+    <div class="world-spacer"></div>
     <div id="world">
       <HudTop />
       <div id="path-container">
@@ -52,6 +53,7 @@ onMounted(() => {
       </div>
       <HudBottom @submit="handleSubmitAnswer()" />
     </div>
+    <div class="world-spacer"></div>
   </div>
 </template>
 
@@ -61,20 +63,46 @@ onMounted(() => {
 #quate-game {
   height: 100%;
   width: 100%;
-  @include styles.hero-center();
+  @include styles.flex-row();
+  gap: 0;
+
+  .world-spacer {
+    flex: 1;
+    height: 100%;
+    width: auto;
+    max-width: calc((100% - var(--screen-medium-min)) / 2);
+    background-color: var(--color-world-shade);
+    position: relative;
+
+    &:after,
+    &:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      width: 100%;
+      height: var(--row-height);
+      background-color: var(--color-primary);
+    }
+
+    &:before {
+      top: auto;
+      bottom: 0;
+    }
+  }
 
   #world {
     @include styles.flex-column();
     gap: 0;
     height: 100%;
     overflow: hidden;
-    width: 50vw;
+    width: 100%;
+    max-width: var(--screen-medium-min);
 
     #path-container {
       width: 100%;
       flex: 1;
       background-color: var(--color-world);
-      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+      box-shadow: inset 0 0 30px var(--color-world-shade);
 
       &:after {
         content: '';
