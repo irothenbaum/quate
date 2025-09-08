@@ -3,49 +3,21 @@ import Term from '@/components/game/Term.vue'
 import {useGameStore} from '@/composables/useGameStore.ts'
 import {ref, computed, type Ref} from 'vue'
 import Pathway from '@/components/game/Pathway.vue'
-import type {LineCoords} from '@/types/game.ts'
-
-interface PathwaySettings {
-  thickness?: number
-  color?: string
-  border?: string
-  zIndex?: number
-}
-
-const defaultPathwaySettings: PathwaySettings = {
-  thickness: 3,
-  color: 'var(--color-world-tint)',
-  border: 'var(--color-world-tint)',
-}
-
-const selectedPathwaySettings: PathwaySettings = {
-  thickness: 12,
-  color: 'var(--color-secondary)',
-  border: 'var(--color-secondary-dark)',
-  zIndex: 6,
-}
-
-const correctPathwaySettings: PathwaySettings = {
-  thickness: 12,
-  color: 'var(--color-power)',
-  border: 'var(--color-power-dark)',
-  zIndex: 6,
-}
-
-const incorrectPathwaySettings: PathwaySettings = {
-  thickness: 12,
-  color: 'var(--color-tertiary)',
-  border: 'var(--color-tertiary-dark)',
-  zIndex: 6,
-}
+import type {PathwayProps} from '@/components/game/Pathway.vue'
 
 const {level_state, handleClickTerm} = useGameStore()
 
 const parent = ref<HTMLDivElement | null>(null)
 const termNodes = ref<HTMLDivElement[][]>([[]])
 
-const pathwayPositions = computed<LineCoords[][][]>(() => {
-  const retVal: LineCoords[][][] = [[[]]]
+const pathwayPositions = computed<PathwayProps[][][]>(() => {
+  const retVal: PathwayProps[][][] = [[[]]]
+
+  if (!parent.value) {
+    return retVal
+  }
+
+  const parentRect = parent.value.getBoundingClientRect()
 
   for (let i = 0; i < termNodes.value.length - 1; i++) {
     const row = termNodes.value[i]
@@ -54,56 +26,34 @@ const pathwayPositions = computed<LineCoords[][][]>(() => {
       for (let k = 0; k < nextRow.length; k++) {
         const termA = row[j]
         const termB = nextRow[k]
-        const parentNode = parent.value
 
-        if (!termA || !termB || !parentNode) {
+        if (!termA || !termB) {
           continue
         }
+
+        if (!retVal[i]) {
+          retVal[i] = []
+        }
+
+        if (!retVal[i][j]) {
+          retVal[i][j] = []
+        }
+
         const rectA = termA.getBoundingClientRect()
         const rectB = termB.getBoundingClientRect()
-        const parentRect = parentNode.getBoundingClientRect()
 
-        const coords: LineCoords = {
-          x0: rectA.left + rectA.width / 2 - parentRect.left,
-          y0: rectA.top + rectA.height / 2 - parentRect.top,
-          x1: rectB.left + rectB.width / 2 - parentRect.left,
-          y1: rectB.top + rectB.height / 2 - parentRect.top,
+        retVal[i][j][k] = {
+          coords: {
+            x0: rectA.left + rectA.width / 2 - parentRect.left,
+            y0: rectA.top + rectA.height / 2 - parentRect.top,
+            x1: rectB.left + rectB.width / 2 - parentRect.left,
+            y1: rectB.top + rectB.height / 2 - parentRect.top,
+          },
         }
 
-        if (!retVal[i]) {
-          retVal[i] = []
-        }
-
-        if (!retVal[i][j]) {
-          retVal[i][j] = []
-        }
-
-        retVal[i][j][k] = coords
-      }
-    }
-  }
-
-  return retVal
-})
-
-const pathwaySettings = computed<PathwaySettings[][][]>(() => {
-  const retVal: PathwaySettings[][][] = [[[]]]
-
-  for (let i = 0; i < termNodes.value.length - 1; i++) {
-    const row = termNodes.value[i]
-    const nextRow = termNodes.value[i + 1]
-    for (let j = 0; j < row.length; j++) {
-      for (let k = 0; k < nextRow.length; k++) {
-        if (!retVal[i]) {
-          retVal[i] = []
-        }
-        if (!retVal[i][j]) {
-          retVal[i][j] = []
-        }
-        retVal[i][j][k] = {...defaultPathwaySettings}
         if (level_state.value) {
           if (level_state.value.selected[i] === j && level_state.value.selected[i + 1] === k) {
-            retVal[i][j][k] = {...selectedPathwaySettings}
+            retVal[i][j][k].isSelected = true
             // TODO: if correct and transitioning, set accordingly
           }
         }
@@ -132,13 +82,12 @@ function setTermNode(e: any, col: number, row: number) {
     <template v-for="(col, i) in pathwayPositions" :key="i">
       <template v-for="(row, j) in col" :key="j">
         <Pathway
-          v-for="(coords, k) in row"
+          v-for="(settings, k) in row"
           :key="k"
-          :coords="coords"
-          :color="pathwaySettings[i][j][k].color"
-          :thickness="pathwaySettings[i][j][k].thickness"
-          :border="pathwaySettings[i][j][k].border"
-          :z-index="pathwaySettings[i][j][k].zIndex"
+          :coords="settings.coords"
+          :is-selected="settings.isSelected"
+          :is-correct="settings.isCorrect"
+          :is-incorrect="settings.isIncorrect"
         />
       </template>
     </template>
