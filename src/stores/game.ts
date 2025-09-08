@@ -53,7 +53,6 @@ export default defineStore('game', () => {
   }
 
   function handleClickTerm(term: TermStep, column: number, row: number) {
-    console.log('handleClickTerm', {term, column, row})
     if (!level_state.value) {
       return
     }

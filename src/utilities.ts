@@ -1,5 +1,6 @@
 import {Operation} from '@/types/game.ts'
 import type {TermStep, GameLevel} from '@/types/game.ts'
+import {v4 as uuid} from 'uuid'
 
 export function shuffleArray<T>(arr: Array<T>): void {
   let currentIndex = arr.length
@@ -74,7 +75,7 @@ function getSingleTermStep(levelNum: number, start: number, max: number): TermSt
         return levelNum >= 12 && startRatio > 0.4 && DIVISORS.some(d => isCleaningDividedBy(start, d))
 
       case Operation.raise:
-        return levelNum >= 16 && Math.pow(start, 2) < max
+        return start > 1 && levelNum >= 16 && Math.pow(start, 2) < max
     }
   }) as Array<Operation>
 
@@ -87,6 +88,7 @@ function generateTermStep(start: number, max: number, op: Operation, decimals: n
   const retVal: TermStep = {
     operation: op,
     number: 0,
+    id: uuid(),
   }
 
   switch (op) {
@@ -109,9 +111,13 @@ function generateTermStep(start: number, max: number, op: Operation, decimals: n
 
     case Operation.raise:
       retVal.number = 2
+      break
   }
 
   retVal.number = parseFloat(retVal.number.toFixed(decimals))
+
+  console.log('Generated term step', retVal)
+
   return retVal
 }
 
@@ -148,7 +154,6 @@ const totalTermsSequence = [
 ]
 // this function generates level with random term values, but whose term orders are set by the term Sequence array
 export function generateLevelUsingTermSequence(levelNum: number, difficulty: number, start: number): GameLevel {
-  console.log('Generating Level Using Term Sequence', {levelNum, difficulty, start})
   const max = difficulty + 10 * levelNum
   const sequence = totalTermsSequence[levelNum]
   let target: number = start
@@ -159,9 +164,7 @@ export function generateLevelUsingTermSequence(levelNum: number, difficulty: num
     const thisRow: Array<TermStep> = []
     // first we create the real step
     const nextStep: TermStep = getSingleTermStep(levelNum, target, max)
-    console.log('Previous target:', target, 'Next step:', nextStep)
     target = applyTermStep(target, nextStep)
-    console.log('New target:', target)
     thisRow.push(nextStep)
 
     // now we create all the fake values (we number the number of terms this row - 1 because 1 is the correct term)
@@ -191,7 +194,6 @@ const stepCountInterval = 5
 // every 3 levels we increase the number of terms
 const totalTermInterval = 3
 export function generateLevel(levelNum: number, difficulty: number, start: number): GameLevel {
-  console.log('Generating Level', {levelNum, difficulty, start})
   const max = difficulty + 10 * levelNum
 
   const stepCount = Math.floor(levelNum / stepCountInterval) + 1
@@ -203,21 +205,22 @@ export function generateLevel(levelNum: number, difficulty: number, start: numbe
   while (stepCounter > 0) {
     const nextStep: TermStep = getSingleTermStep(levelNum, target, max)
     steps.push(nextStep)
-    console.log('Previous target:', target, 'Next step:', nextStep)
     target = applyTermStep(target, nextStep)
-    console.log('New target:', target)
     stepCounter--
   }
 
+  console.log('DEBUG', steps)
+
   let numberOfFakes = totalTerms - stepCount
   let minFakeMagnitude = 0
-  const fakes: Array<Array<TermStep>> = new Array(stepCount).fill([])
+  const fakes: Array<Array<TermStep>> = new Array(stepCount).fill(0).map(() => [])
   while (numberOfFakes > 0) {
     // we don't want to push too many to a single row at once
     // the row with the most fakes should not be more than 2 greater than the smallest
     const viable = fakes.filter(arr => arr.length < minFakeMagnitude + 2)
 
     const nextFakeRow = Math.floor(Math.random() * viable.length)
+    console.log('nextFakeRow', nextFakeRow, JSON.stringify(fakes))
     viable[nextFakeRow].push(getSingleTermStep(levelNum, start, Math.floor(Math.random() * max)))
 
     minFakeMagnitude = fakes.reduce((agr, f) => Math.min(agr, f.length), viable[nextFakeRow].length)
@@ -225,7 +228,6 @@ export function generateLevel(levelNum: number, difficulty: number, start: numbe
   }
 
   const mergedSteps = steps.map((s, i) => [...fakes[i], s])
-  shuffleArray(mergedSteps)
 
   const retVal = {
     start: start,

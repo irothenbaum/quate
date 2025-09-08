@@ -12,7 +12,7 @@ const emit = defineEmits<{
 }>()
 
 const {level_state, difficulty, increaseScore, startNextLevel} = useGameStore()
-const levelNum = ref<number>(8) // levelNum starts at 0 and increases with every completed round
+const levelNum = ref<number>(16) // levelNum starts at 0 and increases with every completed round
 // it basically matches levels_completed but needs to be separate so we can generate the next level before completing it
 // could possible refactor...
 
@@ -103,20 +103,6 @@ onMounted(() => {
       flex: 1;
       background-color: var(--color-world);
       box-shadow: inset 0 0 30px var(--color-world-shade);
-
-      &:after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 50%;
-      }
-
-      &:before {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 50%;
-      }
     }
   }
 }

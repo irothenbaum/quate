@@ -9,6 +9,7 @@ export enum Operation {
 export interface TermStep {
   operation: Operation
   number: number
+  id: string
 }
 
 export interface GameLevel {
