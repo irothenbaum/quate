@@ -1,4 +1,4 @@
-import {Operation} from '@/types/game.ts'
+import {Operation, GameAction} from '@/types/game.ts'
 import type {TermStep, GameLevel} from '@/types/game.ts'
 import {v4 as uuid} from 'uuid'
 
@@ -116,8 +116,6 @@ function generateTermStep(start: number, max: number, op: Operation, decimals: n
 
   retVal.number = parseFloat(retVal.number.toFixed(decimals))
 
-  console.log('Generated term step', retVal)
-
   return retVal
 }
 
@@ -209,8 +207,6 @@ export function generateLevel(levelNum: number, difficulty: number, start: numbe
     stepCounter--
   }
 
-  console.log('DEBUG', steps)
-
   let numberOfFakes = totalTerms - stepCount
   let minFakeMagnitude = 0
   const fakes: Array<Array<TermStep>> = new Array(stepCount).fill(0).map(() => [])
@@ -220,7 +216,6 @@ export function generateLevel(levelNum: number, difficulty: number, start: numbe
     const viable = fakes.filter(arr => arr.length < minFakeMagnitude + 2)
 
     const nextFakeRow = Math.floor(Math.random() * viable.length)
-    console.log('nextFakeRow', nextFakeRow, JSON.stringify(fakes))
     viable[nextFakeRow].push(getSingleTermStep(levelNum, start, Math.floor(Math.random() * max)))
 
     minFakeMagnitude = fakes.reduce((agr, f) => Math.min(agr, f.length), viable[nextFakeRow].length)
@@ -246,4 +241,36 @@ export const operationToLabel = {
   [Operation.multiply]: 'x',
   [Operation.divide]: '/',
   [Operation.raise]: '^',
+}
+
+export const gameActionToClass = {
+  [GameAction.ready]: 'ready',
+  [GameAction.starting]: 'starting',
+  [GameAction.handling_submission]: 'handling-submission',
+  [GameAction.submission_correct]: 'submission-correct',
+  [GameAction.submission_incorrect]: 'submission-incorrect',
+  [GameAction.transitioning_level]: 'transitioning-level',
+}
+
+export function getHoursMinutesSeconds(ms: number): {hours: number; minutes: number; seconds: number} {
+  const totalSeconds = Math.ceil(ms / 1000)
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+
+  return {hours, minutes, seconds}
+}
+
+export function formatTime(ms: number): string[] {
+  const {hours, minutes, seconds} = getHoursMinutesSeconds(ms)
+  const parts = []
+
+  if (hours > 0) {
+    parts.push(hours.toString().padStart(2, '0'))
+  }
+
+  parts.push(minutes.toString().padStart(2, '0'))
+  parts.push(seconds.toString().padStart(2, '0'))
+
+  return parts
 }

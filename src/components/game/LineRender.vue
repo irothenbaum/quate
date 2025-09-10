@@ -5,7 +5,6 @@ import type {LineCoords} from '@/types/game.ts'
 export interface LineSettings {
   thickness?: number
   color?: string
-  border?: string
   zIndex?: number
   withCaps?: boolean
 }
@@ -17,7 +16,6 @@ export interface LineProps extends LineSettings {
 const props = withDefaults(defineProps<LineProps>(), {
   thickness: 3,
   color: 'var(--color-world-tint)',
-  border: 'transparent',
   zIndex: 1,
   withCaps: false,
 })
@@ -46,7 +44,6 @@ const position = computed(() => {
     width: `${props.thickness}px`,
     height: `${length.value}px`,
     backgroundColor: props.color,
-    border: `1px solid ${props.border}`,
     zIndex: props.zIndex,
   }
 })

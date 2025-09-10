@@ -1,6 +1,8 @@
 import {ref, computed} from 'vue'
 import {defineStore} from 'pinia'
 import type {GameLevel, TermStep} from '@/types/game.ts'
+import {GameAction} from '@/types/game.ts'
+import {applyTermStep} from '@/utilities.ts'
 
 const STARTING_LEVEL_STATE: GameLevel = {
   start: 0,
@@ -16,13 +18,14 @@ export default defineStore('game', () => {
 
   const unit_score = ref<number>(0)
   const bonus_score = ref<number>(0)
-  const health = ref<number>(1)
   const solutions = ref<Array<GameLevel>>([])
   const difficulty = ref<number>(100)
+  const game_action = ref<number>(GameAction.starting)
+  const time_remaining_ms = ref<number>(60000) // 1 minute start time
 
   const score = computed(() => unit_score.value + bonus_score.value)
   const levels_completed = computed(() => solutions.value.length)
-  const level_state = ref<GameLevel | undefined>()
+  const level_state = ref<GameLevel>({...STARTING_LEVEL_STATE})
 
   // --------------------------------------------------------------------
   // ACTIONS
@@ -32,31 +35,46 @@ export default defineStore('game', () => {
     level_state.value = {...STARTING_LEVEL_STATE}
     unit_score.value = 0
     bonus_score.value = 0
-    health.value = 1
     solutions.value = []
   }
 
   function startNextLevel(nextLevel: GameLevel) {
-    if (level_state.value) {
+    game_action.value = GameAction.transitioning_level
+
+    let shouldIncreaseClock = false
+    // finalize current level if it was started
+    // if started_timestamp doesn't exist then we're starting the first level
+    if (level_state.value.started_timestamp) {
       // TODO: should we store this level's score? If so, can we merge this with increaseScore
+      level_state.value.completed_timestamp = Date.now()
       solutions.value = [...solutions.value, level_state.value]
+      time_remaining_ms.value -= level_state.value.completed_timestamp - (level_state.value.started_timestamp || 0)
+      shouldIncreaseClock = true
     }
 
-    // apply state changes
-    level_state.value = nextLevel
+    // don't swap to the new level until the UI has had a chance to hide itself
+    setTimeout(() => {
+      // apply state changes
+      level_state.value = nextLevel
+      if (shouldIncreaseClock) {
+        time_remaining_ms.value += 10000 // add 10 seconds for each new level
+      }
+    }, 1000)
+
+    // Start game timeout
+    setTimeout(() => {
+      game_action.value = GameAction.ready
+      level_state.value.started_timestamp = Date.now()
+      level_state.value.expiration_timestamp = Date.now() + time_remaining_ms.value
+    }, 2000)
   }
 
   function increaseScore(unit: number = 0, bonus: number = 0) {
-    console.log('HERE', unit)
     unit_score.value += unit
     bonus_score.value += bonus
   }
 
   function handleClickTerm(term: TermStep, column: number, row: number) {
-    if (!level_state.value) {
-      return
-    }
-
     let nextSelected = [...level_state.value.selected]
     if (column > nextSelected.length) {
       // cannot click ahead, do nothing
@@ -77,10 +95,11 @@ export default defineStore('game', () => {
     unit_score,
     bonus_score,
     score,
-    health,
     level_state,
     levels_completed,
     solutions,
+    game_action,
+    time_remaining_ms,
 
     difficulty,
 

@@ -6,6 +6,15 @@ export enum Operation {
   raise,
 }
 
+export enum GameAction {
+  starting,
+  ready,
+  handling_submission,
+  submission_correct,
+  submission_incorrect,
+  transitioning_level,
+}
+
 export interface TermStep {
   operation: Operation
   number: number
@@ -17,6 +26,9 @@ export interface GameLevel {
   target: number
   steps: Array<Array<TermStep>> // columns and rows
   selected: Array<number> // each element is the index of the selected step. The order is the order of columns
+  started_timestamp?: number
+  completed_timestamp?: number
+  expiration_timestamp?: number
   // for examples:
   // steps = [[A,B,C],[D,E,F],[G,H,I]]
   // the user selects B, F, G

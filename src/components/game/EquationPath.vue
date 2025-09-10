@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import Term from '@/components/game/Term.vue'
 import {useGameStore} from '@/composables/useGameStore.ts'
-import {ref, computed, type Ref} from 'vue'
+import {ref, computed} from 'vue'
 import Pathway from '@/components/game/Pathway.vue'
 import type {PathwayProps} from '@/components/game/Pathway.vue'
 import type {LineCoords} from '@/types/game.ts'
+import {GameAction} from '@/types/game.ts'
 
-const {level_state, handleClickTerm} = useGameStore()
+const {level_state, handleClickTerm, game_action} = useGameStore()
 
 const parent = ref<HTMLDivElement | null>(null)
 const startMarker = ref<HTMLDivElement | null>(null)
@@ -19,17 +20,14 @@ const tailLength = computed<number>(() => {
     return 100
   }
 
-  const rowCount = termNodes.value[0].length
+  const rowCount = termNodes.value.length
 
   const termSpace = termHeight.value * rowCount
   const emptySpace = parent.value.clientHeight - termSpace
   const spaceBetweenTerms = emptySpace / (rowCount + 1)
 
-  const retVal = Math.min(100, spaceBetweenTerms / 3)
-  return retVal
+  return Math.min(100, spaceBetweenTerms / 3 + termHeight.value * 0.4)
 })
-
-console.log(tailLength.value)
 
 const startPathways = computed<PathwayProps[]>(() => {
   if (!parent.value || !startMarker.value) {
@@ -39,7 +37,7 @@ const startPathways = computed<PathwayProps[]>(() => {
   return termNodes.value[0]
     .map((node: HTMLDivElement, index) => {
       const pathway: PathwayProps = {
-        coords: getCoordsBetweenNodes(startMarker.value, node, parent.value),
+        coords: getCoordsBetweenNodes(startMarker.value as HTMLDivElement, node, parent.value as HTMLDivElement),
       }
 
       if (level_state.value) {
@@ -63,13 +61,14 @@ const targetPathways = computed<PathwayProps[]>(() => {
   return termNodes.value[rowIndex]
     .map((node: HTMLDivElement, index) => {
       const pathway: PathwayProps = {
-        coords: getCoordsBetweenNodes(node, targetMarker.value, parent.value),
+        coords: getCoordsBetweenNodes(node, targetMarker.value as HTMLDivElement, parent.value as HTMLDivElement),
       }
 
       if (level_state.value) {
         if (level_state.value.selected[rowIndex] === index) {
           pathway.isSelected = true
-          // TODO: if correct and transitioning, set accordingly
+          pathway.isCorrect = game_action.value === GameAction.submission_correct
+          pathway.isIncorrect = game_action.value === GameAction.submission_incorrect
         }
       }
 
@@ -105,16 +104,19 @@ const pathwayPositions = computed<PathwayProps[][][]>(() => {
           retVal[i][j] = []
         }
 
-        retVal[i][j][k] = {
+        const thisProps: PathwayProps = {
           coords: getCoordsBetweenNodes(termA, termB, parent.value),
         }
 
         if (level_state.value) {
           if (level_state.value.selected[i] === j && level_state.value.selected[i + 1] === k) {
-            retVal[i][j][k].isSelected = true
-            // TODO: if correct and transitioning, set accordingly
+            thisProps.isSelected = true
+            thisProps.isCorrect = game_action.value === GameAction.submission_correct
+            thisProps.isIncorrect = game_action.value === GameAction.submission_incorrect
           }
         }
+
+        retVal[i][j][k] = thisProps
       }
     }
   }

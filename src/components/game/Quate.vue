@@ -1,33 +1,67 @@
 <script setup lang="ts">
-import {computed, ref, onMounted} from 'vue'
+import {onMounted, ref, computed} from 'vue'
 import HudTop from '@/components/game/HudTop.vue'
 import HudBottom from '@/components/game/HudBottom.vue'
 import {useGameStore} from '@/composables/useGameStore.ts'
 import EquationPath from '@/components/game/EquationPath.vue'
-import {generateLevel} from '@/utilities.ts'
+import {applyTermStep, generateLevel, gameActionToClass} from '@/utilities.ts'
+import {GameAction} from '@/types/game.ts'
 
 // Emits definition
 const emit = defineEmits<{
   (e: 'game-over', data: number | undefined): void
 }>()
 
-const {level_state, difficulty, increaseScore, startNextLevel} = useGameStore()
-const levelNum = ref<number>(16) // levelNum starts at 0 and increases with every completed round
+const hasFirstGuessBonus = ref<boolean>(true)
+const {level_state, difficulty, increaseScore, startNextLevel, game_action} = useGameStore()
+const levelNum = ref<number>(0) // levelNum starts at 0 and increases with every completed round
 // it basically matches levels_completed but needs to be separate so we can generate the next level before completing it
-// could possible refactor...
+// could possibly refactor...
+
+const totalTerms = computed(() => {
+  return level_state.value.steps.reduce((acc, step) => acc + step.length, 0)
+})
 
 function handleSubmitAnswer() {
-  // TODO: this
+  game_action.value = GameAction.handling_submission
+
+  // check if the selected terms lead to the target
+  let currentValue = level_state.value.start
+  for (let i = 0; i < level_state.value.selected.length; i++) {
+    const termIndex = level_state.value.selected[i]
+    const term = level_state.value.steps[i][termIndex]
+    currentValue = applyTermStep(currentValue, term)
+  }
+
+  setTimeout(() => {
+    if (currentValue === level_state.value.target) {
+      // correct!
+      handleLevelComplete()
+    } else {
+      // wrong!
+      hasFirstGuessBonus.value = false
+      game_action.value = GameAction.submission_incorrect
+      setTimeout(() => {
+        level_state.value.selected = []
+        game_action.value = GameAction.ready
+      }, 1000)
+    }
+  }, 2000)
 }
 
 function handleLevelComplete() {
-  if (!level_state.value) {
-    return
-  }
+  // calc points
 
-  // TODO: calc points
-  const unitPoints = 0
-  const bonusPoints = 0
+  // 10 points per term on the board
+  const unitPoints = 10 * totalTerms.value
+
+  const secondsToComplete = Math.floor((Date.now() - (level_state.value.started_timestamp || 0)) / 1000)
+  const fastCompletionBonus = Math.max(0, 5 - secondsToComplete)
+  const firstGuessBonus = hasFirstGuessBonus.value ? 5 : 0
+
+  // total bonus is time bonus + first guess bonus
+  const bonusPoints = fastCompletionBonus + firstGuessBonus
+
   increaseScore(unitPoints, bonusPoints)
 
   // inc this immediately
@@ -36,6 +70,12 @@ function handleLevelComplete() {
   const nextLevel = generateLevel(levelNum.value, difficulty.value, level_state.value.target)
 
   startNextLevel(nextLevel)
+  // reset our first guess bonus
+  hasFirstGuessBonus.value = true
+}
+
+function handleTimeExpired() {
+  // TODO: How to handle game over
 }
 
 onMounted(() => {
@@ -44,14 +84,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <div id="quate-game">
+  <div id="quate-game" :class="gameActionToClass[game_action]">
     <div class="world-spacer"></div>
     <div id="world">
       <HudTop />
       <div id="path-container">
         <EquationPath />
       </div>
-      <HudBottom @submit="handleSubmitAnswer()" />
+      <HudBottom @submit="handleSubmitAnswer()" @timeout="handleTimeExpired()" />
     </div>
     <div class="world-spacer"></div>
   </div>
@@ -63,8 +103,7 @@ onMounted(() => {
 #quate-game {
   height: 100%;
   width: 100%;
-  @include styles.flex-row();
-  gap: 0;
+  @include styles.flex-row(0);
 
   .world-spacer {
     flex: 1;
@@ -91,8 +130,7 @@ onMounted(() => {
   }
 
   #world {
-    @include styles.flex-column();
-    gap: 0;
+    @include styles.flex-column(0);
     height: 100%;
     overflow: hidden;
     width: 100%;

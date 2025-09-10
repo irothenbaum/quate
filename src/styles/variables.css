@@ -12,8 +12,8 @@
   --font-size-sm: calc(var(--base-font-size) * 0.85); /* 12px */
   --font-size-md: var(--base-font-size); /* 14px */
   --font-size-lg: calc(var(--base-font-size) * 1.25); /* 17px */
-  --font-size-xl: calc(var(--base-font-size) * 1.6); /* 21px */
-  --font-size-xxl: calc(var(--base-font-size) * 3); /* 28px */
+  --font-size-xl: calc(var(--base-font-size) * 2); /* 21px */
+  --font-size-xxl: calc(var(--base-font-size) * 2.5); /* 28px */
 
   --border-radius-xs: 2px;
   --border-radius-sm: 4px;
@@ -49,12 +49,22 @@
   --color-tertiary: #e14040;
   --color-tertiary-tint: #ed6e6e;
 
+  --color-pathway-default: var(--color-world-tint);
+  --color-pathway-selected: var(--color-secondary);
+  --color-pathway-correct: var(--color-power);
+  --color-pathway-incorrect: var(--color-tertiary);
+  --color-pathway-border-default: var(--color-world-tint);
+  --color-pathway-border-selected: var(--color-secondary-shade);
+  --color-pathway-border-correct: var(--color-power-shade);
+  --color-pathway-border-incorrect: var(--color-tertiary-shade);
+
 
   --color-page-bg: var(--color-primary);
   --color-world-shade: var(--color-black);
   --color-world: var(--color-near-black);
   --color-world-tint: var(--color-dark-grey);
   --color-text: var(--color-white);
+  --color-text-inverse: var(--color-near-black);
 
   --color-disabled-button: var(--color-light-grey);
   --color-success-shade: var(--app-green-600);

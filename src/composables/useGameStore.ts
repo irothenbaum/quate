@@ -2,6 +2,7 @@ import {storeToRefs} from 'pinia'
 // import type {StoreToRefs} from 'pinia'
 import type {Ref} from 'vue'
 import type {GameLevel, TermStep} from '@/types/game.ts'
+import {GameAction} from '@/types/game.ts'
 
 import useGS from '@/stores/game'
 
@@ -12,11 +13,12 @@ import useGS from '@/stores/game'
 interface GameState {
   unit_score: Ref<number>
   bonus_score: Ref<number>
-  health: Ref<number>
   solutions: Ref<Array<GameLevel>>
   score: Ref<number> // computed from unit_score + bonus_score
   levels_completed: Ref<number> // computed from solutions.length + 1
-  level_state: Ref<GameLevel | undefined> // will be empty at the start/end of the game
+  level_state: Ref<GameLevel> // will be empty at the start/end of the game
+  game_action: Ref<GameAction> // current game action, i.e., UI state
+  time_remaining_ms: Ref<number> // time remaining in milliseconds
 }
 
 interface GameSettings {

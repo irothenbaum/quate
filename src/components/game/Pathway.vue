@@ -18,28 +18,24 @@ export interface PathwayProps {
 
 const defaultLineSettings: LineSettings = {
   thickness: 3,
-  color: 'var(--color-world-tint)',
-  border: 'var(--color-world-tint)',
+  color: 'var(--color-pathway-default)',
 }
 
 const selectedLineSettings: LineSettings = {
   thickness: 12,
-  color: 'var(--color-secondary)',
-  border: 'var(--color-secondary-dark)',
+  color: 'var(--color-pathway-selected)',
   zIndex: 6,
 }
 
 const correctLineSettings: LineSettings = {
   thickness: 12,
-  color: 'var(--color-power)',
-  border: 'var(--color-power-dark)',
+  color: 'var(--color-pathway-correct)',
   zIndex: 6,
 }
 
 const incorrectLineSettings: LineSettings = {
   thickness: 12,
-  color: 'var(--color-tertiary)',
-  border: 'var(--color-tertiary-dark)',
+  color: 'var(--color-pathway-incorrect)',
   zIndex: 6,
 }
 

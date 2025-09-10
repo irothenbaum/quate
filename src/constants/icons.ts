@@ -22,3 +22,4 @@ export const SKIP_DOWN: string = PrimeIcons.ANGLE_DOUBLE_DOWN
 export const SKIP_UP: string = PrimeIcons.ANGLE_DOUBLE_UP
 export const COPY: string = PrimeIcons.CLONE
 export const NOTES: string = PrimeIcons.FILE_EDIT
+export const TIMER: string = PrimeIcons.CLOCK
