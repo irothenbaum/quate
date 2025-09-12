@@ -2,8 +2,9 @@ import {Operation, GameAction} from '@/types/game.ts'
 import type {TermStep, GameLevel} from '@/types/game.ts'
 import {v4 as uuid} from 'uuid'
 
-export function shuffleArray<T>(arr: Array<T>): void {
-  let currentIndex = arr.length
+export function shuffleArray<T>(arr: Array<T>): Array<T> {
+  const clone = [...arr]
+  let currentIndex = clone.length
 
   // While there remain elements to shuffle...
   while (currentIndex != 0) {
@@ -12,8 +13,10 @@ export function shuffleArray<T>(arr: Array<T>): void {
     currentIndex--
 
     // And swap it with the current element.
-    ;[arr[currentIndex], arr[randomIndex]] = [arr[randomIndex], arr[currentIndex]]
+    ;[clone[currentIndex], clone[randomIndex]] = [clone[randomIndex], clone[currentIndex]]
   }
+
+  return clone
 }
 
 export function applyTermStep(n: number, t: TermStep): number {
@@ -54,7 +57,8 @@ const DIVISORS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
 
 function getSingleTermStep(levelNum: number, start: number, max: number): TermStep {
   if (max <= 0) {
-    throw new Error('Max must be > 0')
+    console.warn('Max must be > 0')
+    max = 1
   }
 
   const startRatio = start / max
@@ -66,7 +70,7 @@ function getSingleTermStep(levelNum: number, start: number, max: number): TermSt
         return startRatio < 0.8
 
       case Operation.subtract:
-        return levelNum >= 4 && startRatio > 0.2
+        return startRatio > 0.2
 
       case Operation.multiply:
         return levelNum >= 8 && startRatio < 0.4 && start > 0
@@ -167,10 +171,10 @@ export function generateLevelUsingTermSequence(levelNum: number, difficulty: num
 
     // now we create all the fake values (we number the number of terms this row - 1 because 1 is the correct term)
     for (let j = totalTermsThisRow - 1; j > 0; j--) {
-      thisRow.push(getSingleTermStep(levelNum, start, Math.floor(Math.random() * max)))
+      thisRow.push(getSingleTermStep(levelNum, start, Math.floor(Math.random() * max) + 20))
     }
 
-    steps.push(thisRow)
+    steps.push(shuffleArray(thisRow))
   }
 
   const retVal = {
@@ -216,13 +220,13 @@ export function generateLevel(levelNum: number, difficulty: number, start: numbe
     const viable = fakes.filter(arr => arr.length < minFakeMagnitude + 2)
 
     const nextFakeRow = Math.floor(Math.random() * viable.length)
-    viable[nextFakeRow].push(getSingleTermStep(levelNum, start, Math.floor(Math.random() * max)))
+    viable[nextFakeRow].push(getSingleTermStep(levelNum, start, Math.floor(Math.random() * max) + 20))
 
     minFakeMagnitude = fakes.reduce((agr, f) => Math.min(agr, f.length), viable[nextFakeRow].length)
     numberOfFakes--
   }
 
-  const mergedSteps = steps.map((s, i) => [...fakes[i], s])
+  const mergedSteps = steps.map((s, i) => shuffleArray([...fakes[i], s]))
 
   const retVal = {
     start: start,

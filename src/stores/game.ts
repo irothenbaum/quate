@@ -3,6 +3,7 @@ import {defineStore} from 'pinia'
 import type {GameLevel, TermStep} from '@/types/game.ts'
 import {GameAction} from '@/types/game.ts'
 import {applyTermStep} from '@/utilities.ts'
+import {TRANSITION_STEP_MS} from '@/constants/environment.ts'
 
 const STARTING_LEVEL_STATE: GameLevel = {
   start: 0,
@@ -59,14 +60,14 @@ export default defineStore('game', () => {
       if (shouldIncreaseClock) {
         time_remaining_ms.value += 10000 // add 10 seconds for each new level
       }
-    }, 1000)
+    }, 1.5 * TRANSITION_STEP_MS)
 
     // Start game timeout
     setTimeout(() => {
-      game_action.value = GameAction.ready
       level_state.value.started_timestamp = Date.now()
       level_state.value.expiration_timestamp = Date.now() + time_remaining_ms.value
-    }, 2000)
+      game_action.value = GameAction.ready
+    }, 4 * TRANSITION_STEP_MS)
   }
 
   function increaseScore(unit: number = 0, bonus: number = 0) {
@@ -75,6 +76,11 @@ export default defineStore('game', () => {
   }
 
   function handleClickTerm(term: TermStep, column: number, row: number) {
+    if (game_action.value !== GameAction.ready) {
+      // cannot click when not ready
+      return
+    }
+
     let nextSelected = [...level_state.value.selected]
     if (column > nextSelected.length) {
       // cannot click ahead, do nothing

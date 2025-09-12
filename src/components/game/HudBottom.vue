@@ -5,17 +5,16 @@ import {computed, watch, ref} from 'vue'
 import {formatTime} from '@/utilities.ts'
 import {TIMER} from '@/constants/icons.ts'
 import {GameAction} from '@/types/game.ts'
+import {TOTAL_TRANSITION_MS, TRANSITION_STEP_MS} from '@/constants/environment.ts'
 
 const emit = defineEmits<{
-  (e: 'submit'): void
+  // (e: 'submit'): void
   (e: 'timeout'): void
 }>()
-const {level_state, game_action} = useGameStore()
+const {level_state, game_action, time_remaining_ms} = useGameStore()
 
 const clockTimeMs = ref<number>(0)
-const canSubmit = computed<boolean>(() => {
-  return level_state.value.selected.length !== level_state.value.steps.length
-})
+const tailIsSelected = computed(() => level_state.value.selected.length === level_state.value.steps.length)
 const timer = ref<number>(0) // setInerval ID
 const timeParts = computed<string[]>(() => {
   if (clockTimeMs.value === null) {
@@ -27,10 +26,13 @@ const timeParts = computed<string[]>(() => {
 watch(
   () => game_action.value,
   () => {
-    if (game_action.value === GameAction.ready) {
-      // reset clock
-      clockTimeMs.value = Math.max(0, (level_state.value.expiration_timestamp || 0) - Date.now())
-
+    console.log('New action', game_action.value)
+    if (game_action.value === GameAction.transitioning_level) {
+      setTimeout(() => {
+        // reset clock
+        clockTimeMs.value = time_remaining_ms.value
+      }, TOTAL_TRANSITION_MS / 2)
+    } else if (game_action.value === GameAction.ready) {
       if (timer.value) {
         clearInterval(timer.value)
       }
@@ -43,39 +45,46 @@ watch(
             clearInterval(timer.value)
           }
         }
-      }, 200)
+      }, 100)
+    } else if (game_action.value === GameAction.submission_incorrect) {
+      clockTimeMs.value = Math.round(clockTimeMs.value / 2)
+      level_state.value.expiration_timestamp = Date.now() + clockTimeMs.value
     }
   },
   {immediate: true},
 )
-
-function handleClickSubmit() {
-  if (!canSubmit.value) {
-    return
-  }
-
-  emit('submit')
-}
 </script>
 
 <template>
   <div class="hud-bottom">
-    <div :class="{'timer-container': true, low: clockTimeMs !== null && clockTimeMs <= 10000}">
+    <div
+      :class="{
+        'timer-container': true,
+        low: clockTimeMs !== null && clockTimeMs <= 10000,
+        wrong: game_action === GameAction.submission_incorrect,
+      }"
+    >
       <i :class="TIMER" />
       <div class="timer-inner">
         <span class="time-part" v-for="(p, i) in timeParts" :key="i">{{ p }}</span>
       </div>
     </div>
-    <div v-if="level_state" :class="{'start-container': true, active: level_state.selected.length > 0}">
+    <div
+      v-if="level_state"
+      :class="{
+        'start-container': true,
+        active: tailIsSelected,
+        correct: tailIsSelected && game_action === GameAction.submission_correct,
+        incorrect: tailIsSelected && game_action === GameAction.submission_incorrect,
+      }"
+    >
       <div class="start-tail"></div>
       <div class="start">
         {{ level_state.start }}
       </div>
       <div class="start-spacer"></div>
     </div>
-    <div class="submit-container">
-      <div class="submit-button-inner" @click="handleClickSubmit()">SUBMIT</div>
-    </div>
+    <div class="submit-container" />
   </div>
 </template>
 
@@ -89,23 +98,22 @@ $selectedWidth: 2rem;
   z-index: 10;
   height: var(--row-height);
   width: 100%;
-  @include styles.flex-row();
-  justify-content: space-evenly;
+  @include styles.flex-row(0);
 
   .timer-container,
   .submit-container,
   .start-container {
     height: 100%;
-    width: 30%;
+    flex: 1;
   }
 
   .timer-container {
     @include styles.flex-column();
+    justify-content: center;
+    color: var(--color-text-inverse);
     @include styles.small-and-below() {
       gap: var(--space-sm);
     }
-    justify-content: center;
-    color: var(--color-text-inverse);
 
     i {
       margin-right: var(--space-md);
@@ -127,6 +135,11 @@ $selectedWidth: 2rem;
         content: '';
         margin: 0;
       }
+    }
+
+    &.low,
+    &.wrong {
+      color: var(--color-tertiary-dark-shade);
     }
   }
 
@@ -172,7 +185,47 @@ $selectedWidth: 2rem;
         left: calc(50% - $selectedWidth / 2);
         background-color: var(--color-pathway-selected);
       }
+
+      &.correct {
+        .start-tail:after {
+          background-color: var(--color-power);
+        }
+      }
+
+      &.incorrect {
+        .start-tail:after {
+          background-color: var(--color-tertiary);
+        }
+      }
     }
+  }
+}
+
+.transitioning-level {
+  .hud-bottom {
+    .start-container.active {
+      .start-tail:after {
+        animation: tail-cycle calc(3 * #{styles.$transitionStepSpeed}) styles.$transitionStepEase;
+      }
+    }
+  }
+}
+
+@keyframes tail-cycle {
+  0% {
+    background-color: var(--color-pathway-correct);
+  }
+
+  33% {
+    background-color: var(--color-pathway-correct);
+  }
+
+  50% {
+    background-color: var(--color-pathway-default);
+  }
+
+  100% {
+    background-color: var(--color-pathway-default);
   }
 }
 </style>

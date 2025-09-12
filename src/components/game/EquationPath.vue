@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import Term from '@/components/game/Term.vue'
 import {useGameStore} from '@/composables/useGameStore.ts'
-import {ref, computed} from 'vue'
-import Pathway from '@/components/game/Pathway.vue'
+import {computed, ref, watch} from 'vue'
 import type {PathwayProps} from '@/components/game/Pathway.vue'
-import type {LineCoords} from '@/types/game.ts'
-import {GameAction} from '@/types/game.ts'
+import Pathway from '@/components/game/Pathway.vue'
+import {GameAction, type LineCoords} from '@/types/game.ts'
 
 const {level_state, handleClickTerm, game_action} = useGameStore()
 
@@ -30,10 +29,11 @@ const tailLength = computed<number>(() => {
 })
 
 const startPathways = computed<PathwayProps[]>(() => {
-  if (!parent.value || !startMarker.value) {
+  if (!parent.value || !startMarker.value || game_action.value === GameAction.transitioning_level) {
     return []
   }
 
+  const rowIndex = 0
   return termNodes.value[0]
     .map((node: HTMLDivElement, index) => {
       const pathway: PathwayProps = {
@@ -41,9 +41,10 @@ const startPathways = computed<PathwayProps[]>(() => {
       }
 
       if (level_state.value) {
-        if (level_state.value.selected[0] === index) {
+        if (level_state.value.selected[rowIndex] === index) {
           pathway.isSelected = true
-          // TODO: if correct and transitioning, set accordingly
+          pathway.isCorrect = game_action.value === GameAction.submission_correct
+          pathway.isIncorrect = game_action.value === GameAction.submission_incorrect
         }
       }
 
@@ -53,7 +54,7 @@ const startPathways = computed<PathwayProps[]>(() => {
 })
 
 const targetPathways = computed<PathwayProps[]>(() => {
-  if (!parent.value || !targetMarker.value) {
+  if (!parent.value || !targetMarker.value || game_action.value === GameAction.transitioning_level) {
     return []
   }
 
@@ -80,7 +81,7 @@ const targetPathways = computed<PathwayProps[]>(() => {
 const pathwayPositions = computed<PathwayProps[][][]>(() => {
   const retVal: PathwayProps[][][] = [[[]]]
 
-  if (!parent.value) {
+  if (!parent.value || game_action.value === GameAction.transitioning_level) {
     return retVal
   }
 
@@ -124,6 +125,14 @@ const pathwayPositions = computed<PathwayProps[][][]>(() => {
   return retVal
 })
 
+watch(
+  () => level_state.value.steps,
+  async () => {
+    // when steps change, reset termNodes array
+    termNodes.value = [[]]
+  },
+)
+
 function setTermNode(e: any, col: number, row: number) {
   if (!e || !e.root) {
     return
@@ -154,7 +163,7 @@ function getCoordsBetweenNodes(node1: HTMLDivElement, node2: HTMLDivElement, par
   <div class="equation-path" ref="parent">
     <div class="start-path-marker" ref="startMarker" />
     <div class="target-path-marker" ref="targetMarker" />
-    <div class="pathways">
+    <div :class="{pathways: true, hidden: game_action === GameAction.transitioning_level}">
       <Pathway
         v-for="(settings, k) in startPathways"
         :key="k"
@@ -197,7 +206,9 @@ function getCoordsBetweenNodes(node1: HTMLDivElement, node2: HTMLDivElement, par
         <template v-for="(term, j) in row" :key="j">
           <Term
             :term="term"
-            :isSelected="level_state.selected[i] === j"
+            :is-selected="level_state.selected[i] === j"
+            :is-correct="level_state.selected[i] === j && game_action === GameAction.submission_correct"
+            :is-incorrect="level_state.selected[i] === j && game_action === GameAction.submission_incorrect"
             @click="handleClickTerm(term, i, j)"
             :ref="(el: any) => setTermNode(el, i, j)"
           />
@@ -248,6 +259,15 @@ function getCoordsBetweenNodes(node1: HTMLDivElement, node2: HTMLDivElement, par
   .start-path-marker {
     top: auto;
     bottom: 0;
+  }
+
+  .pathways {
+    opacity: 1;
+    transition: all 0.2s ease-out;
+
+    &.hidden {
+      opacity: 0;
+    }
   }
 }
 </style>

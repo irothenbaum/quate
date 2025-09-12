@@ -6,6 +6,8 @@ import LineRender from '@/components/game/LineRender.vue'
 
 const DefaultTailLength = 100
 
+// --------------------------------------
+
 export interface PathwayProps {
   coords: LineCoords
   isSelected?: boolean
@@ -38,6 +40,8 @@ const incorrectLineSettings: LineSettings = {
   color: 'var(--color-pathway-incorrect)',
   zIndex: 6,
 }
+
+// --------------------------------------
 
 const props = withDefaults(defineProps<PathwayProps>(), {
   isSelected: false,
@@ -84,16 +88,11 @@ const finalCoords = computed(() => {
 </script>
 
 <template>
-  <line-render v-for="(c, i) in finalCoords" :key="i" :coords="c" v-bind="lineSettings" :with-caps="i === 1" />
+  <line-render v-for="(c, i) in finalCoords" :key="i" :coords="c" v-bind="lineSettings" :with-caps="i === 1">
+    <slot />
+  </line-render>
 </template>
 
 <style scoped lang="scss">
 @use '../../styles';
-
-.pathway {
-  position: absolute;
-  height: 3px;
-  width: 0;
-  transition: all 0.2s ease-out;
-}
 </style>

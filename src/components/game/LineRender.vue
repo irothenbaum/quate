@@ -55,7 +55,9 @@ const position = computed(() => {
     :style="{
       ...position,
     }"
-  />
+  >
+    <slot />
+  </div>
 </template>
 
 <style scoped lang="scss">

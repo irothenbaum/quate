@@ -56,7 +56,7 @@ $boxShadowSettings: 0 0 10px 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 0px solid var(--color-world-tint);
+  border: 0 solid var(--color-world-tint);
   box-shadow: 0 0 0 0 transparent;
   transition: all 0.2s ease-in;
 

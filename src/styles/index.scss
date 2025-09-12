@@ -5,3 +5,7 @@
 body, html {
   @include typography.body-text()
 }
+
+$transitionStepSpeed: 0.5s;
+$transitionStepEase: ease-in-out;
+$transitionStep: $transitionStepSpeed $transitionStepEase;
