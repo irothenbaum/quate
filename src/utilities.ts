@@ -250,10 +250,11 @@ export const operationToLabel = {
 export const gameActionToClass = {
   [GameAction.ready]: 'ready',
   [GameAction.starting]: 'starting',
-  [GameAction.handling_submission]: 'handling-submission',
   [GameAction.submission_correct]: 'submission-correct',
   [GameAction.submission_incorrect]: 'submission-incorrect',
-  [GameAction.transitioning_level]: 'transitioning-level',
+  [GameAction.transition_level_start]: 'transitioning-level transition-level-start',
+  [GameAction.transition_level_results]: 'transitioning-level transition-level-results',
+  [GameAction.transition_level_end]: 'transitioning-level transition-level-end',
 }
 
 export function getHoursMinutesSeconds(ms: number): {hours: number; minutes: number; seconds: number} {
@@ -277,4 +278,12 @@ export function formatTime(ms: number): string[] {
   parts.push(seconds.toString().padStart(2, '0'))
 
   return parts
+}
+
+export function isTransitioningLevel(action: GameAction): boolean {
+  return [
+    GameAction.transition_level_start,
+    GameAction.transition_level_results,
+    GameAction.transition_level_end,
+  ].includes(action)
 }

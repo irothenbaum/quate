@@ -7,6 +7,7 @@ export interface LineSettings {
   color?: string
   zIndex?: number
   withCaps?: boolean
+  fadeStartColor?: string
 }
 
 export interface LineProps extends LineSettings {
@@ -33,19 +34,26 @@ const rotation = computed(() => {
   return (Math.atan2(deltaY, deltaX) * 180) / Math.PI + 90
 })
 
-const position = computed(() => {
+const styles = computed<Partial<CSSStyleDeclaration>>(() => {
   const midX = (props.coords.x0 + props.coords.x1) / 2
   const midY = (props.coords.y0 + props.coords.y1) / 2
 
-  return {
+  const retVal: Partial<CSSStyleDeclaration> = {
     left: `${midX}px`,
     top: `${midY}px`,
     transform: `translate(-50%, -50%) rotate(${rotation.value}deg)`,
     width: `${props.thickness}px`,
     height: `${length.value}px`,
     backgroundColor: props.color,
-    zIndex: props.zIndex,
+    zIndex: '' + props.zIndex,
   }
+
+  if (props.fadeStartColor) {
+    retVal.background = `linear-gradient(to top, ${props.fadeStartColor} 50%, ${props.color} 100%)`
+    delete retVal.backgroundColor
+  }
+
+  return retVal
 })
 </script>
 
@@ -53,7 +61,7 @@ const position = computed(() => {
   <div
     :class="{pathway: true, 'with-caps': props.withCaps}"
     :style="{
-      ...position,
+      ...styles,
     }"
   >
     <slot />

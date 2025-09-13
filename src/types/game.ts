@@ -9,10 +9,11 @@ export enum Operation {
 export enum GameAction {
   starting,
   ready,
-  handling_submission,
   submission_correct,
   submission_incorrect,
-  transitioning_level,
+  transition_level_start,
+  transition_level_results,
+  transition_level_end,
 }
 
 export interface TermStep {

@@ -2,19 +2,19 @@
 // Emits definition
 import {useGameStore} from '@/composables/useGameStore.ts'
 import {computed, watch, ref} from 'vue'
-import {formatTime} from '@/utilities.ts'
+import {formatTime, isTransitioningLevel} from '@/utilities.ts'
 import {TIMER} from '@/constants/icons.ts'
 import {GameAction} from '@/types/game.ts'
-import {TOTAL_TRANSITION_MS, TRANSITION_STEP_MS} from '@/constants/environment.ts'
+import {TRANSITION_TOTAL_MS, TRANSITION_STEP_MS} from '@/constants/environment.ts'
 
 const emit = defineEmits<{
   // (e: 'submit'): void
   (e: 'timeout'): void
 }>()
-const {level_state, game_action, time_remaining_ms} = useGameStore()
+const {level_state, game_action, time_remaining_ms, streak_count} = useGameStore()
 
 const clockTimeMs = ref<number>(0)
-const tailIsSelected = computed(() => level_state.value.selected.length === level_state.value.steps.length)
+const startIsSelected = computed<boolean>(() => level_state.value.selected.length > 0)
 const timer = ref<number>(0) // setInerval ID
 const timeParts = computed<string[]>(() => {
   if (clockTimeMs.value === null) {
@@ -26,12 +26,11 @@ const timeParts = computed<string[]>(() => {
 watch(
   () => game_action.value,
   () => {
-    console.log('New action', game_action.value)
-    if (game_action.value === GameAction.transitioning_level) {
+    if (game_action.value === GameAction.transition_level_start) {
       setTimeout(() => {
         // reset clock
         clockTimeMs.value = time_remaining_ms.value
-      }, TOTAL_TRANSITION_MS / 2)
+      }, TRANSITION_TOTAL_MS / 2)
     } else if (game_action.value === GameAction.ready) {
       if (timer.value) {
         clearInterval(timer.value)
@@ -45,7 +44,7 @@ watch(
             clearInterval(timer.value)
           }
         }
-      }, 100)
+      }, 100) // refresh timer every 100ms
     } else if (game_action.value === GameAction.submission_incorrect) {
       clockTimeMs.value = Math.round(clockTimeMs.value / 2)
       level_state.value.expiration_timestamp = Date.now() + clockTimeMs.value
@@ -64,27 +63,32 @@ watch(
         wrong: game_action === GameAction.submission_incorrect,
       }"
     >
-      <i :class="TIMER" />
-      <div class="timer-inner">
-        <span class="time-part" v-for="(p, i) in timeParts" :key="i">{{ p }}</span>
+      <div class="container-inner">
+        <i :class="TIMER" />
+        <div class="timer-inner">
+          <span class="time-part" v-for="(p, i) in timeParts" :key="i">{{ p }}</span>
+        </div>
       </div>
     </div>
     <div
-      v-if="level_state"
       :class="{
         'start-container': true,
-        active: tailIsSelected,
-        correct: tailIsSelected && game_action === GameAction.submission_correct,
-        incorrect: tailIsSelected && game_action === GameAction.submission_incorrect,
+        active: startIsSelected,
+        correct:
+          (startIsSelected && game_action === GameAction.submission_correct) || isTransitioningLevel(game_action),
+        incorrect: startIsSelected && game_action === GameAction.submission_incorrect,
       }"
     >
       <div class="start-tail"></div>
-      <div class="start">
-        {{ level_state.start }}
+      <div class="container-inner">
+        <div class="start">
+          {{ level_state.start }}
+        </div>
       </div>
-      <div class="start-spacer"></div>
     </div>
-    <div class="submit-container" />
+    <div class="streak-container">
+      <div class="container-inner">Streak: {{ streak_count }}</div>
+    </div>
   </div>
 </template>
 
@@ -92,27 +96,33 @@ watch(
 @use '../../styles';
 
 $defaultWidth: 1rem;
-$selectedWidth: 2rem;
+$selectedWidth: 2.5rem;
 
 .hud-bottom {
   z-index: 10;
   height: var(--row-height);
   width: 100%;
   @include styles.flex-row(0);
+  padding: var(--space-md);
+
+  @include styles.small-and-below() {
+    padding: var(--space-sm);
+  }
 
   .timer-container,
-  .submit-container,
+  .streak-container,
   .start-container {
-    height: 100%;
-    flex: 1;
+    @include styles.hud-section();
   }
 
   .timer-container {
-    @include styles.flex-column();
-    justify-content: center;
-    color: var(--color-text-inverse);
-    @include styles.small-and-below() {
+    color: var(--color-text);
+
+    .container-inner {
       gap: var(--space-sm);
+      @include styles.small-and-below() {
+        gap: var(--space-xs);
+      }
     }
 
     i {
@@ -139,46 +149,11 @@ $selectedWidth: 2rem;
 
     &.low,
     &.wrong {
-      color: var(--color-tertiary-dark-shade);
+      color: var(--color-tertiary);
     }
   }
 
   .start-container {
-    @include styles.flex-column(0);
-    font-size: 3rem;
-
-    .start-spacer {
-      flex: 1;
-    }
-
-    .start {
-      @include styles.flex-row();
-      height: 60%;
-      width: 100%;
-      border-radius: var(--border-radius-md);
-      background-color: var(--color-world-shade);
-      // border: 1px solid var(--color-primary-shade);
-    }
-
-    .start-tail {
-      width: 30%;
-      flex: 1;
-      background-color: var(--color-world-shade);
-      position: relative;
-
-      &:after {
-        content: '';
-        position: absolute;
-        top: -25%;
-        width: $defaultWidth;
-        left: calc(50% - $defaultWidth / 2);
-        background-color: var(--color-pathway-default);
-        transition: all 0.2s ease-out;
-        height: 150%;
-        border-radius: var(--border-radius-xs);
-      }
-    }
-
     &.active {
       .start-tail:after {
         width: $selectedWidth;
@@ -188,44 +163,54 @@ $selectedWidth: 2rem;
 
       &.correct {
         .start-tail:after {
-          background-color: var(--color-power);
+          background-color: var(--color-pathway-correct);
         }
       }
 
       &.incorrect {
         .start-tail:after {
-          background-color: var(--color-tertiary);
+          background-color: var(--color-pathway-incorrect);
         }
       }
     }
   }
-}
 
-.transitioning-level {
-  .hud-bottom {
-    .start-container.active {
-      .start-tail:after {
-        animation: tail-cycle calc(3 * #{styles.$transitionStepSpeed}) styles.$transitionStepEase;
-      }
+  .start {
+    font-size: 3rem;
+    height: 100%;
+    width: 100%;
+    background-color: var(--color-pathway-correct);
+    @include styles.flex-row();
+    border-radius: var(--border-radius-md);
+  }
+
+  .start-tail {
+    width: 30%;
+    flex: 1;
+    height: var(--space-lg);
+    background-color: var(--color-world-shade);
+    position: absolute;
+    top: calc(-1 * var(--space-md));
+    z-index: 3;
+
+    &:after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      width: $defaultWidth;
+      left: calc(50% - $defaultWidth / 2);
+      background: linear-gradient(to top, var(--color-pathway-correct) 30%, transparent 80%) no-repeat;
+      background-color: var(--color-pathway-default);
+      transition: all 0.2s ease-out;
+      height: 200%;
+      border-radius: var(--border-radius-xs);
     }
-  }
-}
 
-@keyframes tail-cycle {
-  0% {
-    background-color: var(--color-pathway-correct);
-  }
-
-  33% {
-    background-color: var(--color-pathway-correct);
-  }
-
-  50% {
-    background-color: var(--color-pathway-default);
-  }
-
-  100% {
-    background-color: var(--color-pathway-default);
+    @include styles.small-and-below() {
+      width: 40%;
+      height: var(--space-md);
+      top: calc(-1 * var(--space-sm));
+    }
   }
 }
 </style>

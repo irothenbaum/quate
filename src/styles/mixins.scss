@@ -1,3 +1,5 @@
+@use "layout";
+
 @mixin drop-shadow($amount: 4px, $opacity: 0.1) {
   box-shadow: 0 calc($amount/3) $amount rgba(0, 0, 0, $opacity);
 }
@@ -50,6 +52,36 @@
     -moz-user-select: none; /* Firefox */
     -ms-user-select: none; /* Internet Explorer/Edge */
     user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera, and Firefox */
+}
+
+@mixin hud-section {
+  height: 100%;
+  width: 100%;
+  flex: 1;
+  position: relative;
+  @include flex-row(0);
+
+  .container-inner {
+    background-color: var(--color-world-shade);
+    height: 100%;
+    width: 100%;
+    position: relative;
+    @include flex-column(0);
+    justify-content: center;
+    padding: var(--space-md);
+
+    @include layout.small-and-below() {
+      padding: var(--space-sm);
+    }
+  }
+
+  &:first-child .container-inner {
+    border-radius: var(--border-radius-md) 0 0 var(--border-radius-md);
+  }
+
+  &:last-child .container-inner {
+    border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
+  }
 }
 
 @keyframes slow-up-down {

@@ -2,6 +2,7 @@
 import {useGameStore} from '@/composables/useGameStore.ts'
 import {computed} from 'vue'
 import {GameAction} from '@/types/game.ts'
+import {isTransitioningLevel} from '@/utilities.ts'
 
 // Emits definition
 const emit = defineEmits<{
@@ -14,23 +15,28 @@ const tailIsSelected = computed(() => level_state.value.selected.length === leve
 
 <template>
   <div class="hud-top">
-    <div class="level-container">Level: {{ levels_completed + 1 }}</div>
+    <div class="level-container">
+      <div class="container-inner">Level: {{ levels_completed + 1 }}</div>
+    </div>
     <div
       v-if="level_state"
       :class="{
         'target-container': true,
         active: tailIsSelected,
-        correct: tailIsSelected && game_action === GameAction.submission_correct,
+        correct: (tailIsSelected && game_action === GameAction.submission_correct) || isTransitioningLevel(game_action),
         incorrect: tailIsSelected && game_action === GameAction.submission_incorrect,
       }"
     >
-      <div class="target-spacer"></div>
-      <div class="target-inner">
-        {{ level_state.target }}
-      </div>
       <div class="target-tail"></div>
+      <div class="container-inner">
+        <div class="target">
+          {{ level_state.target }}
+        </div>
+      </div>
     </div>
-    <div class="score-container">Score: {{ score }}</div>
+    <div class="score-container">
+      <div class="container-inner">Score: {{ score }}</div>
+    </div>
   </div>
 </template>
 
@@ -38,64 +44,26 @@ const tailIsSelected = computed(() => level_state.value.selected.length === leve
 @use '../../styles';
 
 $defaultWidth: 1rem;
-$selectedWidth: 2rem;
+$selectedWidth: 2.5rem;
 
 .hud-top {
   z-index: 10;
   height: var(--row-height);
   width: 100%;
   @include styles.flex-row(0);
+  padding: var(--space-md);
+
+  @include styles.small-and-below() {
+    padding: var(--space-sm);
+  }
 
   .level-container,
   .target-container,
   .score-container {
-    height: 100%;
-    flex: 1;
-  }
-
-  .level-container,
-  .score-container {
-    @include styles.flex-row(0);
+    @include styles.hud-section();
   }
 
   .target-container {
-    @include styles.flex-column(0);
-    height: 100%;
-    width: 30%;
-    font-size: var(--font-size-xxl);
-
-    .target-spacer {
-      flex: 1;
-    }
-
-    .target-inner {
-      @include styles.flex-row();
-      height: 60%;
-      width: 100%;
-      border-radius: var(--border-radius-md);
-      background-color: var(--color-world-shade);
-      // border: 1px solid var(--color-primary-shade);
-    }
-
-    .target-tail {
-      width: 30%;
-      flex: 1;
-      background-color: var(--color-world-shade);
-      position: relative;
-
-      &:after {
-        content: '';
-        position: absolute;
-        top: -25%;
-        width: $defaultWidth;
-        left: calc(50% - $defaultWidth / 2);
-        background-color: var(--color-pathway-default);
-        transition: all 0.2s ease-out;
-        height: 150%;
-        border-radius: var(--border-radius-xs);
-      }
-    }
-
     &.active {
       .target-tail:after {
         width: $selectedWidth;
@@ -105,7 +73,7 @@ $selectedWidth: 2rem;
 
       &.correct {
         .target-tail:after {
-          background-color: var(--color-power);
+          background-color: var(--color-pathway-correct);
         }
       }
 
@@ -114,35 +82,42 @@ $selectedWidth: 2rem;
           background-color: var(--color-tertiary);
         }
       }
-    }
-  }
-}
 
-.transitioning-level {
-  .hud-top {
-    .target-container.active {
-      .target-tail:after {
-        animation: tail-cycle calc(3 * #{styles.$transitionStepSpeed}) styles.$transitionStepEase;
+      .target {
+        background-color: var(--color-pathway-correct);
       }
     }
   }
-}
 
-@keyframes tail-cycle {
-  0% {
-    background-color: var(--color-pathway-correct);
-  }
-
-  33% {
-    background-color: var(--color-pathway-correct);
-  }
-
-  50% {
+  .target {
+    font-size: 3rem;
+    height: 100%;
+    width: 100%;
     background-color: var(--color-pathway-default);
+    @include styles.flex-row();
+    border-radius: var(--border-radius-md);
   }
 
-  100% {
-    background-color: var(--color-pathway-default);
+  .target-tail {
+    width: 30%;
+    flex: 1;
+    height: var(--space-lg);
+    background-color: var(--color-world-shade);
+    position: absolute;
+    bottom: calc(-1 * var(--space-md));
+    z-index: 3;
+
+    &:after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      width: $defaultWidth;
+      left: calc(50% - $defaultWidth / 2);
+      background-color: var(--color-pathway-default);
+      transition: all 0.2s ease-out;
+      height: 200%;
+      border-radius: var(--border-radius-xs);
+    }
   }
 }
 </style>

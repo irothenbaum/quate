@@ -5,6 +5,7 @@ import {computed, ref, watch} from 'vue'
 import type {PathwayProps} from '@/components/game/Pathway.vue'
 import Pathway from '@/components/game/Pathway.vue'
 import {GameAction, type LineCoords} from '@/types/game.ts'
+import {isTransitioningLevel} from '@/utilities.ts'
 
 const {level_state, handleClickTerm, game_action} = useGameStore()
 
@@ -28,8 +29,10 @@ const tailLength = computed<number>(() => {
   return Math.min(100, spaceBetweenTerms / 3 + termHeight.value * 0.4)
 })
 
+const hidePathsOverride = computed<boolean>(() => false)
+
 const startPathways = computed<PathwayProps[]>(() => {
-  if (!parent.value || !startMarker.value || game_action.value === GameAction.transitioning_level) {
+  if (!parent.value || !startMarker.value || hidePathsOverride.value) {
     return []
   }
 
@@ -43,7 +46,8 @@ const startPathways = computed<PathwayProps[]>(() => {
       if (level_state.value) {
         if (level_state.value.selected[rowIndex] === index) {
           pathway.isSelected = true
-          pathway.isCorrect = game_action.value === GameAction.submission_correct
+          pathway.isCorrect =
+            game_action.value === GameAction.submission_correct || isTransitioningLevel(game_action.value)
           pathway.isIncorrect = game_action.value === GameAction.submission_incorrect
         }
       }
@@ -54,7 +58,7 @@ const startPathways = computed<PathwayProps[]>(() => {
 })
 
 const targetPathways = computed<PathwayProps[]>(() => {
-  if (!parent.value || !targetMarker.value || game_action.value === GameAction.transitioning_level) {
+  if (!parent.value || !targetMarker.value || hidePathsOverride.value) {
     return []
   }
 
@@ -68,7 +72,8 @@ const targetPathways = computed<PathwayProps[]>(() => {
       if (level_state.value) {
         if (level_state.value.selected[rowIndex] === index) {
           pathway.isSelected = true
-          pathway.isCorrect = game_action.value === GameAction.submission_correct
+          pathway.isCorrect =
+            game_action.value === GameAction.submission_correct || isTransitioningLevel(game_action.value)
           pathway.isIncorrect = game_action.value === GameAction.submission_incorrect
         }
       }
@@ -81,7 +86,7 @@ const targetPathways = computed<PathwayProps[]>(() => {
 const pathwayPositions = computed<PathwayProps[][][]>(() => {
   const retVal: PathwayProps[][][] = [[[]]]
 
-  if (!parent.value || game_action.value === GameAction.transitioning_level) {
+  if (!parent.value || hidePathsOverride.value) {
     return retVal
   }
 
@@ -112,7 +117,8 @@ const pathwayPositions = computed<PathwayProps[][][]>(() => {
         if (level_state.value) {
           if (level_state.value.selected[i] === j && level_state.value.selected[i + 1] === k) {
             thisProps.isSelected = true
-            thisProps.isCorrect = game_action.value === GameAction.submission_correct
+            thisProps.isCorrect =
+              game_action.value === GameAction.submission_correct || isTransitioningLevel(game_action.value)
             thisProps.isIncorrect = game_action.value === GameAction.submission_incorrect
           }
         }
@@ -163,7 +169,7 @@ function getCoordsBetweenNodes(node1: HTMLDivElement, node2: HTMLDivElement, par
   <div class="equation-path" ref="parent">
     <div class="start-path-marker" ref="startMarker" />
     <div class="target-path-marker" ref="targetMarker" />
-    <div :class="{pathways: true, hidden: game_action === GameAction.transitioning_level}">
+    <div class="pathways">
       <Pathway
         v-for="(settings, k) in startPathways"
         :key="k"
@@ -207,7 +213,14 @@ function getCoordsBetweenNodes(node1: HTMLDivElement, node2: HTMLDivElement, par
           <Term
             :term="term"
             :is-selected="level_state.selected[i] === j"
-            :is-correct="level_state.selected[i] === j && game_action === GameAction.submission_correct"
+            :is-correct="
+              level_state.selected[i] === j &&
+              [
+                GameAction.submission_correct,
+                GameAction.transition_level_start,
+                GameAction.transition_level_results,
+              ].includes(game_action)
+            "
             :is-incorrect="level_state.selected[i] === j && game_action === GameAction.submission_incorrect"
             @click="handleClickTerm(term, i, j)"
             :ref="(el: any) => setTermNode(el, i, j)"
@@ -263,11 +276,14 @@ function getCoordsBetweenNodes(node1: HTMLDivElement, node2: HTMLDivElement, par
 
   .pathways {
     opacity: 1;
-    transition: all 0.2s ease-out;
+    transition: opacity 0.2s ease-out styles.$transitionStepSpeed;
+  }
+}
 
-    &.hidden {
-      opacity: 0;
-    }
+.transition-level-results,
+.transition-level-end {
+  .pathways {
+    opacity: 0;
   }
 }
 </style>

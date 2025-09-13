@@ -16,6 +16,7 @@ export interface PathwayProps {
   tailLength?: number
   topTailLength?: number
   bottomTailLength?: number
+  isStartTail?: boolean
 }
 
 const defaultLineSettings: LineSettings = {
@@ -44,6 +45,7 @@ const incorrectLineSettings: LineSettings = {
 // --------------------------------------
 
 const props = withDefaults(defineProps<PathwayProps>(), {
+  isStartTail: false,
   isSelected: false,
   isCorrect: false,
   isIncorrect: false,
@@ -88,7 +90,14 @@ const finalCoords = computed(() => {
 </script>
 
 <template>
-  <line-render v-for="(c, i) in finalCoords" :key="i" :coords="c" v-bind="lineSettings" :with-caps="i === 1">
+  <line-render
+    v-for="(c, i) in finalCoords"
+    :key="i"
+    :coords="c"
+    v-bind="lineSettings"
+    :with-caps="i === 1"
+    :fade-start-color="i === 0 && props.isStartTail ? 'var(--color-pathway-correct)' : undefined"
+  >
     <slot />
   </line-render>
 </template>

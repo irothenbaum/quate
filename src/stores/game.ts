@@ -3,7 +3,12 @@ import {defineStore} from 'pinia'
 import type {GameLevel, TermStep} from '@/types/game.ts'
 import {GameAction} from '@/types/game.ts'
 import {applyTermStep} from '@/utilities.ts'
-import {TRANSITION_STEP_MS} from '@/constants/environment.ts'
+import {
+  NEXT_ROUND_TIME_BONUS_MS,
+  TRANSITION_RESULTS_MS,
+  TRANSITION_STEP_MS,
+  TRANSITION_TOTAL_MS,
+} from '@/constants/environment.ts'
 
 const STARTING_LEVEL_STATE: GameLevel = {
   start: 0,
@@ -23,6 +28,7 @@ export default defineStore('game', () => {
   const difficulty = ref<number>(100)
   const game_action = ref<number>(GameAction.starting)
   const time_remaining_ms = ref<number>(60000) // 1 minute start time
+  const streak_count = ref<number>(0)
 
   const score = computed(() => unit_score.value + bonus_score.value)
   const levels_completed = computed(() => solutions.value.length)
@@ -40,7 +46,14 @@ export default defineStore('game', () => {
   }
 
   function startNextLevel(nextLevel: GameLevel) {
-    game_action.value = GameAction.transitioning_level
+    game_action.value = GameAction.transition_level_start
+    setTimeout(() => {
+      game_action.value = GameAction.transition_level_results
+
+      setTimeout(() => {
+        game_action.value = GameAction.transition_level_end
+      }, TRANSITION_RESULTS_MS)
+    }, TRANSITION_STEP_MS)
 
     let shouldIncreaseClock = false
     // finalize current level if it was started
@@ -58,16 +71,17 @@ export default defineStore('game', () => {
       // apply state changes
       level_state.value = nextLevel
       if (shouldIncreaseClock) {
-        time_remaining_ms.value += 10000 // add 10 seconds for each new level
+        time_remaining_ms.value += NEXT_ROUND_TIME_BONUS_MS
       }
-    }, 1.5 * TRANSITION_STEP_MS)
+    }, TRANSITION_TOTAL_MS / 2)
 
     // Start game timeout
     setTimeout(() => {
       level_state.value.started_timestamp = Date.now()
       level_state.value.expiration_timestamp = Date.now() + time_remaining_ms.value
       game_action.value = GameAction.ready
-    }, 4 * TRANSITION_STEP_MS)
+      // 1 second after the transition finishes, we start the game
+    }, TRANSITION_TOTAL_MS)
   }
 
   function increaseScore(unit: number = 0, bonus: number = 0) {
@@ -106,6 +120,7 @@ export default defineStore('game', () => {
     solutions,
     game_action,
     time_remaining_ms,
+    streak_count,
 
     difficulty,
 

@@ -6,6 +6,15 @@ import {useGameStore} from '@/composables/useGameStore.ts'
 import EquationPath from '@/components/game/EquationPath.vue'
 import {applyTermStep, generateLevel, gameActionToClass} from '@/utilities.ts'
 import {GameAction} from '@/types/game.ts'
+import {
+  FAST_RESPONSE_TIME_S,
+  MAX_STREAK,
+  NEW_ROUND_DELAY_MS,
+  POINTS_PER_TERM,
+  RIGHT_ANSWER_TIMEOUT,
+  STREAK_BONUS_RATIO,
+  WRONG_ANSWER_TIMEOUT,
+} from '@/constants/environment.ts'
 
 // Emits definition
 const emit = defineEmits<{
@@ -14,7 +23,7 @@ const emit = defineEmits<{
 
 const pathRef = ref<HTMLDivElement | null>(null)
 const hasFirstGuessBonus = ref<boolean>(true)
-const {level_state, difficulty, increaseScore, startNextLevel, game_action} = useGameStore()
+const {level_state, difficulty, increaseScore, startNextLevel, game_action, streak_count} = useGameStore()
 const levelNum = ref<number>(0) // levelNum starts at 0 and increases with every completed round
 // it basically matches levels_completed but needs to be separate so we can generate the next level before completing it
 // could possibly refactor...
@@ -51,8 +60,6 @@ watch(
 )
 
 function handleSubmitAnswer() {
-  game_action.value = GameAction.handling_submission
-
   // check if the selected terms lead to the target
   let currentValue = level_state.value.start
   for (let i = 0; i < level_state.value.selected.length; i++) {
@@ -61,37 +68,40 @@ function handleSubmitAnswer() {
     currentValue = applyTermStep(currentValue, term)
   }
 
-  setTimeout(() => {
-    if (currentValue === level_state.value.target) {
-      // correct!
-      game_action.value = GameAction.submission_correct
-      setTimeout(() => {
-        handleLevelComplete()
-      }, 1000)
-    } else {
-      // wrong!
-      hasFirstGuessBonus.value = false
-      game_action.value = GameAction.submission_incorrect
-      setTimeout(() => {
-        level_state.value.selected = []
-        game_action.value = GameAction.ready
-      }, 1000)
-    }
-  }, 500)
+  if (currentValue === level_state.value.target) {
+    // correct!
+    game_action.value = GameAction.submission_correct
+    setTimeout(() => {
+      streak_count.value = streak_count.value + 1
+      handleLevelComplete()
+    }, RIGHT_ANSWER_TIMEOUT)
+  } else {
+    // wrong!
+    hasFirstGuessBonus.value = false
+    streak_count.value = 0
+    game_action.value = GameAction.submission_incorrect
+    setTimeout(() => {
+      level_state.value.selected = []
+      game_action.value = GameAction.ready
+    }, WRONG_ANSWER_TIMEOUT)
+  }
 }
 
 function handleLevelComplete() {
   // calc points
 
   // 10 points per term on the board
-  const unitPoints = 10 * totalTerms.value
+  const unitPoints = POINTS_PER_TERM * totalTerms.value
 
   const secondsToComplete = Math.floor((Date.now() - (level_state.value.started_timestamp || 0)) / 1000)
-  const fastCompletionBonus = Math.max(0, 5 - secondsToComplete)
-  const firstGuessBonus = hasFirstGuessBonus.value ? 5 : 0
 
-  // total bonus is time bonus + first guess bonus
-  const bonusPoints = fastCompletionBonus + firstGuessBonus
+  const timeBonusRatio = hasFirstGuessBonus.value
+    ? Math.max(0, FAST_RESPONSE_TIME_S - secondsToComplete) / FAST_RESPONSE_TIME_S
+    : 0
+
+  // streak of 1 -> no bonus, streak of 2 -> 10%, streak of 3 -> 20%, ... streak of 6+ -> 50%
+  const streakBonusRatio = Math.min(MAX_STREAK, streak_count.value - 1) * STREAK_BONUS_RATIO
+  const bonusPoints = timeBonusRatio * unitPoints + streakBonusRatio * unitPoints
 
   increaseScore(unitPoints, bonusPoints)
 
@@ -107,13 +117,14 @@ function handleLevelComplete() {
 
 function handleTimeExpired() {
   // TODO: How to handle game over
+  console.log('Time expired - game over')
 }
 
 onMounted(() => {
   setTimeout(() => {
     console.log('STARTING')
     startNextLevel(generateLevel(levelNum.value, difficulty.value, 0))
-  }, 1000)
+  }, NEW_ROUND_DELAY_MS)
 })
 </script>
 
@@ -194,19 +205,20 @@ onMounted(() => {
   &.transitioning-level {
     #world,
     .world-spacer {
-      animation: world-cycle calc(3 * #{styles.$transitionStepSpeed}) styles.$transitionStepEase;
+      animation: world-cycle styles.$transitionTotalSpeed styles.$transitionStepEase;
 
       #path-container {
         height: 0;
 
         #path-inner {
-          animation: path-inner-cycle calc(3 * #{styles.$transitionStepSpeed}) styles.$transitionStepEase;
+          animation: path-inner-cycle styles.$transitionTotalSpeed styles.$transitionStepEase;
         }
       }
     }
   }
 }
 
+// these frame stops need to be synced with the transition step speed
 @keyframes world-cycle {
   0% {
     padding-top: 0;
