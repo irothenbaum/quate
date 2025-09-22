@@ -10,7 +10,7 @@ const emit = defineEmits<{
 }>()
 
 const {levels_completed, score, level_state, game_action} = useGameStore()
-const tailIsSelected = computed(() => level_state.value.selected.length === level_state.value.steps.length)
+const tailIsSelected = computed<boolean>(() => level_state.value.selected.length > 0)
 </script>
 
 <template>
@@ -21,16 +21,16 @@ const tailIsSelected = computed(() => level_state.value.selected.length === leve
     <div
       v-if="level_state"
       :class="{
-        'target-container': true,
+        'start-container': true,
         active: tailIsSelected,
         correct: (tailIsSelected && game_action === GameAction.submission_correct) || isTransitioningLevel(game_action),
         incorrect: tailIsSelected && game_action === GameAction.submission_incorrect,
       }"
     >
-      <div class="target-tail"></div>
+      <div class="start-tail"></div>
       <div class="container-inner">
-        <div class="target">
-          {{ level_state.target }}
+        <div class="start">
+          {{ level_state.start }}
         </div>
       </div>
     </div>
@@ -47,8 +47,8 @@ $defaultWidth: 1rem;
 $selectedWidth: 2.5rem;
 
 .hud-top {
-  z-index: 10;
-  height: var(--row-height);
+  z-index: 11;
+  height: var(--hud-height);
   width: 100%;
   @include styles.flex-row(0);
   padding: var(--space-md);
@@ -58,47 +58,47 @@ $selectedWidth: 2.5rem;
   }
 
   .level-container,
-  .target-container,
+  .start-container,
   .score-container {
     @include styles.hud-section();
   }
 
-  .target-container {
+  .start-container {
     &.active {
-      .target-tail:after {
+      .start-tail:after {
         width: $selectedWidth;
         left: calc(50% - $selectedWidth / 2);
         background-color: var(--color-pathway-selected);
       }
 
       &.correct {
-        .target-tail:after {
+        .start-tail:after {
           background-color: var(--color-pathway-correct);
         }
       }
 
       &.incorrect {
-        .target-tail:after {
+        .start-tail:after {
           background-color: var(--color-tertiary);
         }
       }
 
-      .target {
+      .start {
         background-color: var(--color-pathway-correct);
       }
     }
   }
 
-  .target {
+  .start {
     font-size: 3rem;
     height: 100%;
     width: 100%;
-    background-color: var(--color-pathway-default);
+    background-color: var(--color-pathway-correct);
     @include styles.flex-row();
     border-radius: var(--border-radius-md);
   }
 
-  .target-tail {
+  .start-tail {
     width: 30%;
     flex: 1;
     height: var(--space-lg);
@@ -113,10 +113,17 @@ $selectedWidth: 2.5rem;
       top: -50%;
       width: $defaultWidth;
       left: calc(50% - $defaultWidth / 2);
+      background: linear-gradient(to bottom, var(--color-pathway-correct) 30%, transparent 80%) no-repeat;
       background-color: var(--color-pathway-default);
       transition: all 0.2s ease-out;
       height: 200%;
       border-radius: var(--border-radius-xs);
+    }
+
+    @include styles.small-and-below() {
+      width: 40%;
+      height: var(--space-md);
+      bottom: calc(-1 * var(--space-sm));
     }
   }
 }

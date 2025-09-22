@@ -14,7 +14,7 @@ const emit = defineEmits<{
 const {level_state, game_action, time_remaining_ms, streak_count} = useGameStore()
 
 const clockTimeMs = ref<number>(0)
-const startIsSelected = computed<boolean>(() => level_state.value.selected.length > 0)
+const targetIsSelected = computed(() => level_state.value.selected.length === level_state.value.steps.length)
 const timer = ref<number>(0) // setInerval ID
 const timeParts = computed<string[]>(() => {
   if (clockTimeMs.value === null) {
@@ -26,7 +26,7 @@ const timeParts = computed<string[]>(() => {
 watch(
   () => game_action.value,
   () => {
-    if (game_action.value === GameAction.transition_level_start) {
+    if (game_action.value === GameAction.transition_level_target) {
       setTimeout(() => {
         // reset clock
         clockTimeMs.value = time_remaining_ms.value
@@ -72,17 +72,17 @@ watch(
     </div>
     <div
       :class="{
-        'start-container': true,
-        active: startIsSelected,
+        'target-container': true,
+        active: targetIsSelected,
         correct:
-          (startIsSelected && game_action === GameAction.submission_correct) || isTransitioningLevel(game_action),
-        incorrect: startIsSelected && game_action === GameAction.submission_incorrect,
+          (targetIsSelected && game_action === GameAction.submission_correct) || isTransitioningLevel(game_action),
+        incorrect: targetIsSelected && game_action === GameAction.submission_incorrect,
       }"
     >
-      <div class="start-tail"></div>
+      <div class="target-tail"></div>
       <div class="container-inner">
-        <div class="start">
-          {{ level_state.start }}
+        <div class="target">
+          {{ level_state.target }}
         </div>
       </div>
     </div>
@@ -100,7 +100,7 @@ $selectedWidth: 2.5rem;
 
 .hud-bottom {
   z-index: 10;
-  height: var(--row-height);
+  height: var(--hud-height);
   width: 100%;
   @include styles.flex-row(0);
   padding: var(--space-md);
@@ -111,7 +111,7 @@ $selectedWidth: 2.5rem;
 
   .timer-container,
   .streak-container,
-  .start-container {
+  .target-container {
     @include styles.hud-section();
   }
 
@@ -126,7 +126,6 @@ $selectedWidth: 2.5rem;
     }
 
     i {
-      margin-right: var(--space-md);
       font-size: var(--font-size-md);
     }
 
@@ -153,38 +152,42 @@ $selectedWidth: 2.5rem;
     }
   }
 
-  .start-container {
+  .target-container {
     &.active {
-      .start-tail:after {
+      .target-tail:after {
         width: $selectedWidth;
         left: calc(50% - $selectedWidth / 2);
         background-color: var(--color-pathway-selected);
       }
 
       &.correct {
-        .start-tail:after {
+        .target-tail:after {
           background-color: var(--color-pathway-correct);
         }
       }
 
       &.incorrect {
-        .start-tail:after {
+        .target-tail:after {
           background-color: var(--color-pathway-incorrect);
         }
+      }
+
+      .target {
+        background-color: var(--color-pathway-correct);
       }
     }
   }
 
-  .start {
+  .target {
     font-size: 3rem;
     height: 100%;
     width: 100%;
-    background-color: var(--color-pathway-correct);
+    background-color: var(--color-pathway-default);
     @include styles.flex-row();
     border-radius: var(--border-radius-md);
   }
 
-  .start-tail {
+  .target-tail {
     width: 30%;
     flex: 1;
     height: var(--space-lg);
@@ -199,7 +202,6 @@ $selectedWidth: 2.5rem;
       top: -50%;
       width: $defaultWidth;
       left: calc(50% - $defaultWidth / 2);
-      background: linear-gradient(to top, var(--color-pathway-correct) 30%, transparent 80%) no-repeat;
       background-color: var(--color-pathway-default);
       transition: all 0.2s ease-out;
       height: 200%;

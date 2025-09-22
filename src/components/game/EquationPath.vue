@@ -5,7 +5,7 @@ import {computed, ref, watch} from 'vue'
 import type {PathwayProps} from '@/components/game/Pathway.vue'
 import Pathway from '@/components/game/Pathway.vue'
 import {GameAction, type LineCoords} from '@/types/game.ts'
-import {isTransitioningLevel} from '@/utilities.ts'
+import {getCoordsBetweenNodes, isTransitioningLevel} from '@/utilities.ts'
 
 const {level_state, handleClickTerm, game_action} = useGameStore()
 
@@ -150,19 +150,6 @@ function setTermNode(e: any, col: number, row: number) {
 
   termNodes.value[col][row] = e.root as HTMLDivElement
 }
-
-function getCoordsBetweenNodes(node1: HTMLDivElement, node2: HTMLDivElement, parent: HTMLDivElement): LineCoords {
-  const rect1 = node1.getBoundingClientRect()
-  const rect2 = node2.getBoundingClientRect()
-  const parentRect = parent.getBoundingClientRect()
-
-  return {
-    x0: rect1.left + rect1.width / 2 - parentRect.left,
-    y0: rect1.top + rect1.height / 2 - parentRect.top,
-    x1: rect2.left + rect2.width / 2 - parentRect.left,
-    y1: rect2.top + rect2.height / 2 - parentRect.top,
-  }
-}
 </script>
 
 <template>
@@ -244,7 +231,7 @@ function getCoordsBetweenNodes(node1: HTMLDivElement, node2: HTMLDivElement, par
     height: 100%;
     width: 100%;
     display: flex;
-    flex-direction: column-reverse; // reverse because we want the first row at the bottom
+    flex-direction: column; // we want first row at the top
     gap: 0;
     justify-content: space-evenly;
     align-items: center;
@@ -253,6 +240,8 @@ function getCoordsBetweenNodes(node1: HTMLDivElement, node2: HTMLDivElement, par
   }
 
   .equation-row {
+    height: var(--row-height);
+    position: relative;
     width: 100%;
     display: flex;
     align-items: center;
@@ -262,7 +251,8 @@ function getCoordsBetweenNodes(node1: HTMLDivElement, node2: HTMLDivElement, par
   .target-path-marker,
   .start-path-marker {
     position: absolute;
-    top: 0;
+    bottom: 0;
+    top: auto;
     left: 50%;
     height: 0;
     width: 0;
@@ -270,8 +260,8 @@ function getCoordsBetweenNodes(node1: HTMLDivElement, node2: HTMLDivElement, par
   }
 
   .start-path-marker {
-    top: auto;
-    bottom: 0;
+    bottom: auto;
+    top: 0;
   }
 
   .pathways {

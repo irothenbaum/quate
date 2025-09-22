@@ -1,6 +1,7 @@
 import {Operation, GameAction} from '@/types/game.ts'
 import type {TermStep, GameLevel} from '@/types/game.ts'
 import {v4 as uuid} from 'uuid'
+import type {LineCoords} from '@/types/game.ts'
 
 export function shuffleArray<T>(arr: Array<T>): Array<T> {
   const clone = [...arr]
@@ -286,4 +287,21 @@ export function isTransitioningLevel(action: GameAction): boolean {
     GameAction.transition_level_results,
     GameAction.transition_level_end,
   ].includes(action)
+}
+
+export function getCoordsBetweenNodes(
+  node1: HTMLDivElement,
+  node2: HTMLDivElement,
+  parent: HTMLDivElement,
+): LineCoords {
+  const rect1 = node1.getBoundingClientRect()
+  const rect2 = node2.getBoundingClientRect()
+  const parentRect = parent.getBoundingClientRect()
+
+  return {
+    x0: rect1.left + rect1.width / 2 - parentRect.left,
+    y0: rect1.top + rect1.height / 2 - parentRect.top,
+    x1: rect2.left + rect2.width / 2 - parentRect.left,
+    y1: rect2.top + rect2.height / 2 - parentRect.top,
+  }
 }

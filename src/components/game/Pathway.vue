@@ -70,11 +70,11 @@ const finalCoords = computed(() => {
     x0: props.coords.x0,
     y0: props.coords.y0,
     x1: props.coords.x0,
-    y1: props.coords.y0 - (props.bottomTailLength ?? props.tailLength ?? DefaultTailLength),
+    y1: props.coords.y0 + (props.bottomTailLength ?? props.tailLength ?? DefaultTailLength),
   }
   const endTail = {
     x0: props.coords.x1,
-    y0: props.coords.y1 + (props.topTailLength ?? props.tailLength ?? DefaultTailLength),
+    y0: props.coords.y1 - (props.topTailLength ?? props.tailLength ?? DefaultTailLength),
     x1: props.coords.x1,
     y1: props.coords.y1,
   }

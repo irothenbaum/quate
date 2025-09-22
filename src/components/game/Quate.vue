@@ -172,7 +172,7 @@ onMounted(() => {
     .path-clone {
       height: 100%;
       width: 100%;
-      margin: var(--row-height) 0;
+      margin: var(--hud-height) 0;
       background-color: var(--color-world-shade);
     }
   }
@@ -225,12 +225,12 @@ onMounted(() => {
     padding-bottom: 0;
   }
   33% {
-    padding-top: calc(50vh - var(--row-height));
-    padding-bottom: calc(50vh - var(--row-height));
+    padding-top: calc(50vh - var(--hud-height));
+    padding-bottom: calc(50vh - var(--hud-height));
   }
   66% {
-    padding-top: calc(50vh - var(--row-height));
-    padding-bottom: calc(50vh - var(--row-height));
+    padding-top: calc(50vh - var(--hud-height));
+    padding-bottom: calc(50vh - var(--hud-height));
   }
   100% {
     padding-top: 0;
@@ -243,10 +243,10 @@ onMounted(() => {
     top: 0;
   }
   33% {
-    top: calc(-50vh + var(--row-height));
+    top: calc(-50vh + var(--hud-height));
   }
   66% {
-    top: calc(-50vh + var(--row-height));
+    top: calc(-50vh + var(--hud-height));
   }
   100% {
     top: 0;

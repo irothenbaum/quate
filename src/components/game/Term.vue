@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type {TermStep} from '@/types/game.ts'
-import {operationToLabel} from '@/utilities.ts'
-import {ref} from 'vue'
+import {getCoordsBetweenNodes, operationToLabel} from '@/utilities.ts'
+import {watch, ref, computed} from 'vue'
+import {TRANSITION_STEP_MS} from '@/constants/environment.ts'
 
 const props = withDefaults(
   defineProps<{
@@ -17,14 +18,24 @@ const props = withDefaults(
   },
 )
 
+const emits = defineEmits<{
+  (e: 'click'): void
+}>()
+
 const root = ref<HTMLDivElement | null>(null)
+
+// const parent = root.value.parentElement as HTMLDivElement
+// const currentLeft = root.value.getBoundingClientRect().left - parent.getBoundingClientRect().left
+// const targetLeft = parent.getBoundingClientRect().width / 2
 
 // expose the DOM element to the parent
 defineExpose({root})
 </script>
 
 <template>
+  <!--  <div v-if="isSelected || isCorrect" class="term-shadow"></div>-->
   <div
+    @click="() => $emit('click')"
     ref="root"
     :class="{
       term: true,
@@ -43,16 +54,19 @@ defineExpose({root})
 <style scoped lang="scss">
 @use '../../styles';
 
-$size: 7rem;
-
 $boxShadowSettings: 0 0 10px 0;
+
+.term-shadow {
+  height: var(--term-size);
+  width: var(--term-size);
+}
 
 .term {
   @include styles.no-text-select();
   cursor: pointer;
   border-radius: 50%;
-  height: $size;
-  width: $size;
+  height: var(--term-size);
+  width: var(--term-size);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -90,6 +104,9 @@ $boxShadowSettings: 0 0 10px 0;
   }
 
   &.correct {
+    //position: absolute;
+    //left: calc(50% - var(--term-size) / 2);
+    //top: 0;
     border-color: var(--color-power);
     box-shadow: $boxShadowSettings var(--color-power);
 

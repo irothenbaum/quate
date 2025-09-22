@@ -93,5 +93,9 @@
 
   --content-max-width: var(--screen-medium-max);
 
+  --hud-min-height: 8rem;
   --row-height: 10vh;
+  --hud-height: max(var(--row-height), var(--hud-min-height));
+
+  --term-size: 7rem;
 }
