@@ -1,4 +1,5 @@
 @use "layout";
+@use "variables";
 
 @mixin drop-shadow($amount: 4px, $opacity: 0.1) {
   box-shadow: 0 calc($amount/3) $amount rgba(0, 0, 0, $opacity);
@@ -84,15 +85,56 @@
   }
 }
 
-@keyframes slow-up-down {
-  0% {
-    transform: translateY(0);
+
+// Helper function: cumulative percentage at a given index
+@function cumulative-perc($list, $index) {
+  $sum: 0;
+  $i: 1;
+  @each $item in $list {
+    @if $i <= $index {
+      $sum: $sum + $item;
+    }
+    $i: $i + 1;
   }
-  50% {
-    transform: translateY(calc(-1 * var(--space-lg)));
+  @return ($sum / variables.$transitionTotalSpeed) * 100%;
+}
+
+$transitionTimings: (
+  variables.$transitionStepSpeed,
+  variables.$transitionResultsSpeed,
+  variables.$transitionStepSpeed
+);
+
+
+@mixin proportional-keyframes($name, $steps) {
+  $len: length($transitionTimings);
+
+  @if $len != length($steps) - 1 {
+    @error "Timings and steps must have the same length.";
   }
-  100% {
-    transform: translateY(0);
+
+  @keyframes #{$name} {
+    0% {
+      @each $prop, $val in nth($steps, 1) {
+        #{$prop}: #{$val};
+      }
+    }
+
+    @for $i from 2 through $len + 1 {
+      #{cumulative-perc($transitionTimings, $i - 1)} {
+        @each $prop, $val in nth($steps, $i) {
+          #{$prop}: #{$val};
+        }
+      }
+    }
   }
 }
 
+@mixin transition-animation($name, $start, $stop) {
+  @include proportional-keyframes($name, (
+    $start,
+    $stop,
+    $stop,
+    $start
+  ));
+}

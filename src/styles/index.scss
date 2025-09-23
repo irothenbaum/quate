@@ -1,17 +1,8 @@
 @use './typography';
+@forward "./variables";
 @forward "./layout";
 @forward "./mixins";
 
 body, html {
   @include typography.body-text()
 }
-
-// these should match constants/environment.ts
-$transitionStepSpeed: 0.5s;
-$transitionResultsSpeed: 3s;
-$transitionTotalSpeed: $transitionStepSpeed * 2 + $transitionResultsSpeed;
-
-$transitionStepEase: ease-in-out;
-
-$transitionStep: $transitionStepSpeed $transitionStepEase;
-$transitionResults: $transitionResultsSpeed $transitionStepEase;

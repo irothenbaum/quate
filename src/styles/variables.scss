@@ -1,3 +1,13 @@
+// these should match constants/environment.ts
+$transitionStepSpeed: 0.5s;
+$transitionResultsSpeed: 3s;
+$transitionTotalSpeed: $transitionStepSpeed * 2 + $transitionResultsSpeed;
+
+$transitionStepEase: ease-in-out;
+
+$transitionStep: $transitionStepSpeed $transitionStepEase;
+$transitionResults: $transitionResultsSpeed $transitionStepEase;
+
 :root {
   --base-spacing: 1rem;
   --space-xs: calc(var(--base-spacing) * 0.3); /* 0.5rem */
@@ -38,6 +48,7 @@
   --color-power-shade: #1aa1cb;
   --color-power: #00c4ff;
   --color-power-tint: #7fddff;
+  --color-power-bright-tint: #baebff;
 
   --color-secondary-dark-shade: #b4aca1;
   --color-secondary-shade: #c9c1b5;

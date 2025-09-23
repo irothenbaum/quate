@@ -6,6 +6,7 @@ import {formatTime, isTransitioningLevel} from '@/utilities.ts'
 import {TIMER} from '@/constants/icons.ts'
 import {GameAction} from '@/types/game.ts'
 import {TRANSITION_TOTAL_MS, TRANSITION_STEP_MS} from '@/constants/environment.ts'
+import IncrementingNumber from '@/components/utility/IncrementingNumber.vue'
 
 const emit = defineEmits<{
   // (e: 'submit'): void
@@ -81,9 +82,7 @@ watch(
     >
       <div class="target-tail"></div>
       <div class="container-inner">
-        <div class="target">
-          {{ level_state.target }}
-        </div>
+        <IncrementingNumber :number="level_state.target" class="target" />
       </div>
     </div>
     <div class="streak-container">
@@ -123,10 +122,6 @@ $selectedWidth: 2.5rem;
       @include styles.small-and-below() {
         gap: var(--space-xs);
       }
-    }
-
-    i {
-      font-size: var(--font-size-md);
     }
 
     span {
@@ -170,6 +165,10 @@ $selectedWidth: 2.5rem;
         .target-tail:after {
           background-color: var(--color-pathway-incorrect);
         }
+
+        .target {
+          background-color: var(--color-tertiary);
+        }
       }
 
       .target {
@@ -185,6 +184,7 @@ $selectedWidth: 2.5rem;
     background-color: var(--color-pathway-default);
     @include styles.flex-row();
     border-radius: var(--border-radius-md);
+    transition: all 0.2s ease-out;
   }
 
   .target-tail {

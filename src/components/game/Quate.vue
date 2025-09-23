@@ -177,6 +177,24 @@ onMounted(() => {
     }
   }
 
+  .path-clone,
+  #path-container {
+    position: relative;
+
+    &:after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--color-power-bright-tint);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 10;
+    }
+  }
+
   #world {
     @include styles.flex-column(0);
     height: 100%;
@@ -215,41 +233,47 @@ onMounted(() => {
         }
       }
     }
+
+    .path-clone,
+    #path-container {
+      &:after {
+        animation: brighten-cycle styles.$transitionTotalSpeed styles.$transitionStepEase;
+      }
+    }
   }
 }
 
-// these frame stops need to be synced with the transition step speed
-@keyframes world-cycle {
-  0% {
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-  33% {
-    padding-top: calc(50vh - var(--hud-height));
-    padding-bottom: calc(50vh - var(--hud-height));
-  }
-  66% {
-    padding-top: calc(50vh - var(--hud-height));
-    padding-bottom: calc(50vh - var(--hud-height));
-  }
-  100% {
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-}
+@include styles.transition-animation(
+  world-cycle,
+  (
+    padding-top: 0,
+    padding-bottom: 0,
+    background-color: var(--color-primary),
+  ),
+  (
+    padding-top: calc(50vh - var(--hud-height)),
+    padding-bottom: calc(50vh - var(--hud-height)),
+    background-color: #204435,
+  )
+);
 
-@keyframes path-inner-cycle {
-  0% {
-    top: 0;
-  }
-  33% {
-    top: calc(-50vh + var(--hud-height));
-  }
-  66% {
-    top: calc(-50vh + var(--hud-height));
-  }
-  100% {
-    top: 0;
-  }
-}
+@include styles.transition-animation(
+  path-inner-cycle,
+  (
+    top: 0,
+  ),
+  (
+    top: calc(-50vh + var(--hud-height)),
+  )
+);
+
+@include styles.transition-animation(
+  brighten-cycle,
+  (
+    opacity: 0,
+  ),
+  (
+    opacity: 1,
+  )
+);
 </style>

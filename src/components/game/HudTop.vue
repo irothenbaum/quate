@@ -3,6 +3,9 @@ import {useGameStore} from '@/composables/useGameStore.ts'
 import {computed} from 'vue'
 import {GameAction} from '@/types/game.ts'
 import {isTransitioningLevel} from '@/utilities.ts'
+import IncrementingNumber from '@/components/utility/IncrementingNumber.vue'
+import {LEVEL} from '@/constants/icons.ts'
+import {TRANSITION_TOTAL_MS} from '@/constants/environment.ts'
 
 // Emits definition
 const emit = defineEmits<{
@@ -16,7 +19,10 @@ const tailIsSelected = computed<boolean>(() => level_state.value.selected.length
 <template>
   <div class="hud-top">
     <div class="level-container">
-      <div class="container-inner">Level: {{ levels_completed + 1 }}</div>
+      <div class="container-inner">
+        <i :class="LEVEL" />
+        <IncrementingNumber :number="levels_completed + 1" :animation-duration="TRANSITION_TOTAL_MS * 2" />
+      </div>
     </div>
     <div
       v-if="level_state"
@@ -29,9 +35,7 @@ const tailIsSelected = computed<boolean>(() => level_state.value.selected.length
     >
       <div class="start-tail"></div>
       <div class="container-inner">
-        <div class="start">
-          {{ level_state.start }}
-        </div>
+        <IncrementingNumber :number="level_state.start" class="start" />
       </div>
     </div>
     <div class="score-container">
@@ -65,9 +69,13 @@ $selectedWidth: 2.5rem;
 
   .start-container {
     &.active {
-      .start-tail:after {
+      .start-tail:after,
+      .start-tail:before {
         width: $selectedWidth;
         left: calc(50% - $selectedWidth / 2);
+      }
+
+      .start-tail:after {
         background-color: var(--color-pathway-selected);
       }
 
@@ -78,7 +86,11 @@ $selectedWidth: 2.5rem;
       }
 
       &.incorrect {
-        .start-tail:after {
+        .start-tail:before {
+          opacity: 1;
+        }
+
+        .start {
           background-color: var(--color-tertiary);
         }
       }
@@ -96,6 +108,7 @@ $selectedWidth: 2.5rem;
     background-color: var(--color-pathway-correct);
     @include styles.flex-row();
     border-radius: var(--border-radius-md);
+    transition: all 0.2s ease-out;
   }
 
   .start-tail {
@@ -107,7 +120,8 @@ $selectedWidth: 2.5rem;
     bottom: calc(-1 * var(--space-md));
     z-index: 3;
 
-    &:after {
+    &:after,
+    &:before {
       content: '';
       position: absolute;
       top: -50%;
@@ -120,10 +134,25 @@ $selectedWidth: 2.5rem;
       border-radius: var(--border-radius-xs);
     }
 
+    // this before element mirrors the after element and is used to animate the linear gradient to solid red when incorrect.
+    &:before {
+      z-index: 2;
+      opacity: 0;
+      background: var(--color-tertiary);
+    }
+
     @include styles.small-and-below() {
       width: 40%;
       height: var(--space-md);
       bottom: calc(-1 * var(--space-sm));
+    }
+  }
+
+  .level-container {
+    .container-inner {
+      font-size: 3rem;
+      flex-direction: row;
+      gap: var(--space-md);
     }
   }
 }
