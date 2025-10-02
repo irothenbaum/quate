@@ -68,6 +68,7 @@ export default defineStore('game', () => {
 
     // don't swap to the new level until the UI has had a chance to hide itself
     setTimeout(() => {
+      console.log('Starting next level:', nextLevel, shouldIncreaseClock)
       // apply state changes
       level_state.value = nextLevel
       if (shouldIncreaseClock) {

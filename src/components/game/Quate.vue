@@ -2,6 +2,7 @@
 import {onMounted, ref, computed, nextTick, watch} from 'vue'
 import HudTop from '@/components/game/HudTop.vue'
 import HudBottom from '@/components/game/HudBottom.vue'
+import LevelResults from '@/components/game/LevelResults.vue'
 import {useGameStore} from '@/composables/useGameStore.ts'
 import EquationPath from '@/components/game/EquationPath.vue'
 import {applyTermStep, generateLevel, gameActionToClass} from '@/utilities.ts'
@@ -135,6 +136,7 @@ onMounted(() => {
     </div>
     <div id="world">
       <HudTop />
+      <LevelResults />
       <div
         id="path-container"
         ref="pathRef"

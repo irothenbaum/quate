@@ -7,7 +7,7 @@ export const TRANSITION_TOTAL_MS = TRANSITION_STEP_MS * 2 + TRANSITION_RESULTS_M
 
 export const NEW_ROUND_DELAY_MS = 1000 // 1 second
 
-export const NEXT_ROUND_TIME_BONUS_MS = 500
+export const NEXT_ROUND_TIME_BONUS_MS = 10000
 export const POINTS_PER_TERM = 10
 export const FAST_RESPONSE_TIME_S = 5
 export const MAX_STREAK = 6

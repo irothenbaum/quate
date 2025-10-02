@@ -4,8 +4,28 @@ import {ROUTE_PLAY_QUATE} from '@/constants/routes.ts'
 import {OUTLINED_VARIANT} from '@/constants/variants.ts'
 import NumberInput from '@/components/utility/NumberInput.vue'
 import {useGameStore} from '@/composables/useGameStore.ts'
+import {NEXT_ROUND_TIME_BONUS_MS} from '@/constants/environment.ts'
+import {TIMER, POINTS, STREAK} from '@/constants/icons.ts'
+import {ref, watch} from 'vue'
+import IncrementingNumber from '@/components/utility/IncrementingNumber.vue'
 
-const {difficulty} = useGameStore()
+const {score, streak_count} = useGameStore()
+const lastScore = ref(0)
+const lastStreak = ref(0)
+
+watch(
+  () => score.value,
+  (newScore, oldScore) => {
+    lastScore.value = oldScore
+  },
+)
+
+watch(
+  () => streak_count.value,
+  (newStreak, oldStreak) => {
+    lastStreak.value = oldStreak
+  },
+)
 
 // TODO: Implement Level Results functionality
 // Should appear during the transition between levels
@@ -14,12 +34,97 @@ const {difficulty} = useGameStore()
 </script>
 
 <template>
-  <div class="level-results"></div>
+  <div class="level-results">
+    <div class="time-increment">
+      {{ NEXT_ROUND_TIME_BONUS_MS / 1000 }}s
+      <i :class="TIMER" />
+    </div>
+    <div class="score-increment">
+      <IncrementingNumber :number="score - lastScore" :animation-duration="200" />
+      <i :class="POINTS" />
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">
 @use '../../styles';
 
+.transition-level-results {
+  .level-results {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+    line-height: 1.5em;
+
+    .time-increment,
+    .score-increment,
+    .streak-increment {
+      background: var(--color-shadow);
+      box-shadow: 0 0 60px 60px var(--color-shadow);
+      animation: show-results styles.$transitionResultsSpeed ease-in-out forwards;
+    }
+  }
+}
+
 .level-results {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  max-width: var(--screen-medium-min);
+  opacity: 0;
+  transform: translate(100%, 0);
+  // transform: translate(-50%, -50%);
+  @include styles.flex-row();
+  gap: 120px; // this 2x the blur amount
+  z-index: 1000;
+  align-items: center;
+
+  .time-increment,
+  .score-increment,
+  .streak-increment {
+    flex: 5;
+  }
+
+  & > * {
+    width: 100%;
+    flex: 1;
+    text-align: center;
+    text-shadow: 6px 6px 20px var(--color-shadow);
+    font-size: calc(var(--base-font-size) * 2.5);
+    line-height: 1.5em;
+
+    @include styles.medium-and-below() {
+      font-size: calc(var(--base-font-size) * 3.5);
+    }
+    @include styles.small-and-below() {
+      font-size: calc(var(--base-font-size) * 3);
+    }
+
+    i {
+      font-size: var(--font-size-lg);
+    }
+  }
+
+  .time-increment {
+    color: var(--color-power);
+  }
+
+  .score-increment {
+  }
+
+  .streak-increment {
+  }
+}
+
+@keyframes show-results {
+  0% {
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 </style>
