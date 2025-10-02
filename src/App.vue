@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import Toast from 'primevue/toast'
+import Quate from '@/components/game/Quate.vue'
 </script>
 
 <template>
-  <Toast />
-  <router-view :key="$route.fullPath" />
+  <Quate />
 </template>
 
 <style scoped lang="scss">

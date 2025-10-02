@@ -12,7 +12,7 @@ const emit = defineEmits<{
   (e: 'pause'): void
 }>()
 
-const {levels_completed, score, level_state, game_action} = useGameStore()
+const {levels_completed, streak_count, level_state, game_action} = useGameStore()
 const tailIsSelected = computed<boolean>(() => level_state.value.selected.length > 0)
 </script>
 
@@ -38,8 +38,8 @@ const tailIsSelected = computed<boolean>(() => level_state.value.selected.length
         <IncrementingNumber :number="level_state.start" class="start" />
       </div>
     </div>
-    <div class="score-container">
-      <div class="container-inner">Score: {{ score }}</div>
+    <div class="streak-container">
+      <div class="container-inner">Streak: {{ streak_count }}</div>
     </div>
   </div>
 </template>
@@ -63,7 +63,7 @@ $selectedWidth: 2.5rem;
 
   .level-container,
   .start-container,
-  .score-container {
+  .streak-container {
     @include styles.hud-section();
   }
 

@@ -5,14 +5,14 @@ import {computed, watch, ref} from 'vue'
 import {formatTime, isTransitioningLevel} from '@/utilities.ts'
 import {TIMER} from '@/constants/icons.ts'
 import {GameAction} from '@/types/game.ts'
-import {TRANSITION_TOTAL_MS, TRANSITION_STEP_MS} from '@/constants/environment.ts'
+import {TRANSITION_TOTAL_MS, TRANSITION_STEP_MS, TRANSITION_RESULTS_MS} from '@/constants/environment.ts'
 import IncrementingNumber from '@/components/utility/IncrementingNumber.vue'
 
 const emit = defineEmits<{
   // (e: 'submit'): void
   (e: 'timeout'): void
 }>()
-const {level_state, game_action, time_remaining_ms, streak_count} = useGameStore()
+const {level_state, game_action, time_remaining_ms, score} = useGameStore()
 
 const clockTimeMs = ref<number>(0)
 const targetIsSelected = computed(() => level_state.value.selected.length === level_state.value.steps.length)
@@ -27,7 +27,7 @@ const timeParts = computed<string[]>(() => {
 watch(
   () => game_action.value,
   () => {
-    if (game_action.value === GameAction.transition_level_target) {
+    if (game_action.value === GameAction.transition_level_start) {
       setTimeout(() => {
         // reset clock
         clockTimeMs.value = time_remaining_ms.value
@@ -85,8 +85,10 @@ watch(
         <IncrementingNumber :number="level_state.target" class="target" />
       </div>
     </div>
-    <div class="streak-container">
-      <div class="container-inner">Streak: {{ streak_count }}</div>
+    <div class="score-container">
+      <div class="container-inner">
+        <IncrementingNumber :number="score" :animation-delay="TRANSITION_STEP_MS + TRANSITION_RESULTS_MS / 2" />
+      </div>
     </div>
   </div>
 </template>
@@ -109,7 +111,7 @@ $selectedWidth: 2.5rem;
   }
 
   .timer-container,
-  .streak-container,
+  .score-container,
   .target-container {
     @include styles.hud-section();
   }

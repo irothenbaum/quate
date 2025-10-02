@@ -36,11 +36,11 @@ watch(
 <template>
   <div class="level-results">
     <div class="time-increment">
-      {{ NEXT_ROUND_TIME_BONUS_MS / 1000 }}s
+      +{{ NEXT_ROUND_TIME_BONUS_MS / 1000 }}s
       <i :class="TIMER" />
     </div>
     <div class="score-increment">
-      <IncrementingNumber :number="score - lastScore" :animation-duration="200" />
+      +{{ score - lastScore }}
       <i :class="POINTS" />
     </div>
   </div>
@@ -58,8 +58,8 @@ watch(
     .time-increment,
     .score-increment,
     .streak-increment {
-      background: var(--color-shadow);
-      box-shadow: 0 0 60px 60px var(--color-shadow);
+      // background: var(--color-shadow);
+      // box-shadow: 0 0 60px 60px var(--color-shadow);
       animation: show-results styles.$transitionResultsSpeed ease-in-out forwards;
     }
   }
@@ -67,13 +67,12 @@ watch(
 
 .level-results {
   position: fixed;
-  top: 50%;
+  top: calc(50% + var(--hud-height));
   left: 50%;
   width: 100%;
   max-width: var(--screen-medium-min);
   opacity: 0;
   transform: translate(100%, 0);
-  // transform: translate(-50%, -50%);
   @include styles.flex-row();
   gap: 120px; // this 2x the blur amount
   z-index: 1000;

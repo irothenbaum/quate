@@ -2,7 +2,6 @@ import {ref, computed} from 'vue'
 import {defineStore} from 'pinia'
 import type {GameLevel, TermStep} from '@/types/game.ts'
 import {GameAction} from '@/types/game.ts'
-import {applyTermStep} from '@/utilities.ts'
 import {
   NEXT_ROUND_TIME_BONUS_MS,
   TRANSITION_RESULTS_MS,
@@ -26,7 +25,7 @@ export default defineStore('game', () => {
   const bonus_score = ref<number>(0)
   const solutions = ref<Array<GameLevel>>([])
   const difficulty = ref<number>(100)
-  const game_action = ref<number>(GameAction.starting)
+  const game_action = ref<number>(GameAction.menu)
   const time_remaining_ms = ref<number>(60000) // 1 minute start time
   const streak_count = ref<number>(0)
 
@@ -57,12 +56,12 @@ export default defineStore('game', () => {
 
     let shouldIncreaseClock = false
     // finalize current level if it was started
-    // if started_timestamp doesn't exist then we're starting the first level
-    if (level_state.value.started_timestamp) {
-      // TODO: should we store this level's score? If so, can we merge this with increaseScore
-      level_state.value.completed_timestamp = Date.now()
+    // if expiration_timestamp and completed_timestamp don't exist then we're starting the first level
+    if (level_state.value.expiration_timestamp && level_state.value.completed_timestamp) {
       solutions.value = [...solutions.value, level_state.value]
-      time_remaining_ms.value -= level_state.value.completed_timestamp - (level_state.value.started_timestamp || 0)
+      time_remaining_ms.value = level_state.value.expiration_timestamp - level_state.value.completed_timestamp
+
+      // only increase close after round 1
       shouldIncreaseClock = true
     }
 

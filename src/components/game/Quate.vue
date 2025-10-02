@@ -7,6 +7,7 @@ import {useGameStore} from '@/composables/useGameStore.ts'
 import EquationPath from '@/components/game/EquationPath.vue'
 import {applyTermStep, generateLevel, gameActionToClass} from '@/utilities.ts'
 import {GameAction} from '@/types/game.ts'
+import Menu from '@/components/Menu.vue'
 import {
   FAST_RESPONSE_TIME_S,
   MAX_STREAK,
@@ -24,28 +25,19 @@ const emit = defineEmits<{
 
 const pathRef = ref<HTMLDivElement | null>(null)
 const hasFirstGuessBonus = ref<boolean>(true)
-const {level_state, difficulty, increaseScore, startNextLevel, game_action, streak_count} = useGameStore()
-const levelNum = ref<number>(0) // levelNum starts at 0 and increases with every completed round
-// it basically matches levels_completed but needs to be separate so we can generate the next level before completing it
-// could possibly refactor...
+const {level_state, levels_completed, difficulty, increaseScore, startNextLevel, game_action, streak_count} =
+  useGameStore()
 
 const maxHeight = ref(0)
 
 function updateHeight() {
-  console.log('Update Height called')
   if (pathRef.value) {
     const currentHeight = pathRef.value.offsetHeight
     if (currentHeight > maxHeight.value) {
       maxHeight.value = currentHeight
-      console.log('Updated maxHeight to', maxHeight.value)
     }
   }
 }
-
-onMounted(() => {
-  // Initial measure after DOM renders
-  nextTick(updateHeight)
-})
 
 const totalTerms = computed(() => {
   return level_state.value.steps.reduce((acc, step) => acc + step.length, 0)
@@ -60,6 +52,11 @@ watch(
   },
 )
 
+function handleStartGame() {
+  startNextLevel(generateLevel(0, difficulty.value, 0))
+  nextTick(updateHeight)
+}
+
 function handleSubmitAnswer() {
   // check if the selected terms lead to the target
   let currentValue = level_state.value.start
@@ -72,6 +69,8 @@ function handleSubmitAnswer() {
   if (currentValue === level_state.value.target) {
     // correct!
     game_action.value = GameAction.submission_correct
+    // mark it completed immediately
+    level_state.value.completed_timestamp = Date.now()
     setTimeout(() => {
       streak_count.value = streak_count.value + 1
       handleLevelComplete()
@@ -106,10 +105,7 @@ function handleLevelComplete() {
 
   increaseScore(unitPoints, bonusPoints)
 
-  // inc this immediately
-  levelNum.value += 1
-
-  const nextLevel = generateLevel(levelNum.value, difficulty.value, level_state.value.target)
+  const nextLevel = generateLevel(levels_completed.value + 1, difficulty.value, level_state.value.target)
 
   startNextLevel(nextLevel)
   // reset our first guess bonus
@@ -120,33 +116,31 @@ function handleTimeExpired() {
   // TODO: How to handle game over
   console.log('Time expired - game over')
 }
-
-onMounted(() => {
-  setTimeout(() => {
-    console.log('STARTING')
-    startNextLevel(generateLevel(levelNum.value, difficulty.value, 0))
-  }, NEW_ROUND_DELAY_MS)
-})
 </script>
 
 <template>
-  <div id="quate-game" :class="gameActionToClass[game_action]">
+  <div id="quate-game" :class="[gameActionToClass[game_action], 'level-' + (levels_completed + 1)]">
     <div class="world-spacer">
       <div class="path-clone"></div>
     </div>
     <div id="world">
-      <HudTop />
-      <LevelResults />
-      <div
-        id="path-container"
-        ref="pathRef"
-        :style="game_action === GameAction.ready ? undefined : {height: maxHeight + 'px'}"
-      >
-        <div id="path-inner" :style="{height: maxHeight + 'px'}">
-          <EquationPath />
+      <template v-if="game_action === GameAction.menu">
+        <Menu @start-game="handleStartGame()" />
+      </template>
+      <template v-else>
+        <HudTop />
+        <div
+          id="path-container"
+          ref="pathRef"
+          :style="game_action === GameAction.ready ? undefined : {height: maxHeight + 'px'}"
+        >
+          <div id="path-inner" :style="{height: maxHeight + 'px'}">
+            <EquationPath />
+          </div>
         </div>
-      </div>
-      <HudBottom @submit="handleSubmitAnswer()" @timeout="handleTimeExpired()" />
+        <HudBottom @submit="handleSubmitAnswer()" @timeout="handleTimeExpired()" />
+        <LevelResults v-if="levels_completed > 0" />
+      </template>
     </div>
     <div class="world-spacer">
       <div class="path-clone"></div>

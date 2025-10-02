@@ -9,30 +9,34 @@ const props = withDefaults(
   defineProps<{
     number?: number
     animationDuration?: number
+    animationDelay?: number
   }>(),
   {
     number: 0,
     animationDuration: TRANSITION_STEP_MS,
+    animationDelay: 0,
   },
 )
 const displayNumber = ref(props.number)
 watch(
   () => props.number,
   newNumber => {
-    const startNumber = displayNumber.value
-    const endNumber = newNumber || 0
-    const duration = props.animationDuration || TRANSITION_STEP_MS
-    const steps = Math.ceil(duration / STEP_TIME)
-    let currentStep = 0
+    setTimeout(() => {
+      const startNumber = displayNumber.value
+      const endNumber = newNumber || 0
+      const duration = props.animationDuration || TRANSITION_STEP_MS
+      const steps = Math.ceil(duration / STEP_TIME)
+      let currentStep = 0
 
-    const interval = setInterval(() => {
-      currentStep++
-      displayNumber.value = startNumber + ((endNumber - startNumber) * currentStep) / steps
-      if (currentStep >= steps) {
-        clearInterval(interval)
-        displayNumber.value = endNumber
-      }
-    }, STEP_TIME)
+      const interval = setInterval(() => {
+        currentStep++
+        displayNumber.value = startNumber + ((endNumber - startNumber) * currentStep) / steps
+        if (currentStep >= steps) {
+          clearInterval(interval)
+          displayNumber.value = endNumber
+        }
+      }, STEP_TIME)
+    }, props.animationDelay)
   },
   {immediate: true},
 )

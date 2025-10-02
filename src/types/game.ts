@@ -7,6 +7,7 @@ export enum Operation {
 }
 
 export enum GameAction {
+  menu,
   starting,
   ready,
   submission_correct,
@@ -14,6 +15,7 @@ export enum GameAction {
   transition_level_start,
   transition_level_results,
   transition_level_end,
+  game_over,
 }
 
 export interface TermStep {
