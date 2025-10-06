@@ -19,6 +19,7 @@ interface GameState {
   level_state: Ref<GameLevel> // will be empty at the start/end of the game
   game_action: Ref<GameAction> // current game action, i.e., UI state
   streak_count: Ref<number>
+  longest_streak: Ref<number>
   time_remaining_ms: Ref<number> // time remaining in milliseconds
 }
 

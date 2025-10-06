@@ -306,3 +306,7 @@ export function getCoordsBetweenNodes(
     y1: rect2.top + rect2.height / 2 - parentRect.top,
   }
 }
+
+export function formatNumber(n: number): string {
+  return n.toLocaleString(undefined, {maximumFractionDigits: 2})
+}

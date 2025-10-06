@@ -4,7 +4,7 @@ import {computed} from 'vue'
 import {GameAction} from '@/types/game.ts'
 import {isTransitioningLevel} from '@/utilities.ts'
 import IncrementingNumber from '@/components/utility/IncrementingNumber.vue'
-import {LEVEL} from '@/constants/icons.ts'
+import {LEVEL, STREAK} from '@/constants/icons.ts'
 import {TRANSITION_TOTAL_MS} from '@/constants/environment.ts'
 
 // Emits definition
@@ -39,7 +39,10 @@ const tailIsSelected = computed<boolean>(() => level_state.value.selected.length
       </div>
     </div>
     <div class="streak-container">
-      <div class="container-inner">Streak: {{ streak_count }}</div>
+      <div class="container-inner">
+        <i :class="STREAK" />
+        {{ streak_count }}
+      </div>
     </div>
   </div>
 </template>
@@ -148,7 +151,8 @@ $selectedWidth: 2.5rem;
     }
   }
 
-  .level-container {
+  .level-container,
+  .streak-container {
     .container-inner {
       font-size: 3rem;
       flex-direction: row;

@@ -3,7 +3,7 @@
 import {useGameStore} from '@/composables/useGameStore.ts'
 import {computed, watch, ref} from 'vue'
 import {formatTime, isTransitioningLevel} from '@/utilities.ts'
-import {TIMER} from '@/constants/icons.ts'
+import {TIMER, POINTS} from '@/constants/icons.ts'
 import {GameAction} from '@/types/game.ts'
 import {TRANSITION_TOTAL_MS, TRANSITION_STEP_MS, TRANSITION_RESULTS_MS} from '@/constants/environment.ts'
 import IncrementingNumber from '@/components/utility/IncrementingNumber.vue'
@@ -85,8 +85,9 @@ watch(
         <IncrementingNumber :number="level_state.target" class="target" />
       </div>
     </div>
-    <div class="score-container">
+    <div :class="{'score-container': true, large: score >= 10000}">
       <div class="container-inner">
+        <i :class="POINTS" />
         <IncrementingNumber :number="score" :animation-delay="TRANSITION_STEP_MS + TRANSITION_RESULTS_MS / 2" />
       </div>
     </div>
@@ -116,7 +117,8 @@ $selectedWidth: 2.5rem;
     @include styles.hud-section();
   }
 
-  .timer-container {
+  .timer-container,
+  .score-container {
     color: var(--color-text);
 
     .container-inner {
@@ -214,6 +216,18 @@ $selectedWidth: 2.5rem;
       width: 40%;
       height: var(--space-md);
       top: calc(-1 * var(--space-sm));
+    }
+  }
+
+  .score-container {
+    .container-inner {
+      font-size: 3rem;
+    }
+
+    &.large {
+      .container-inner {
+        font-size: 2rem;
+      }
     }
   }
 }

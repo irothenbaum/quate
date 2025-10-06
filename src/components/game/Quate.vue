@@ -17,6 +17,7 @@ import {
   STREAK_BONUS_RATIO,
   WRONG_ANSWER_TIMEOUT,
 } from '@/constants/environment.ts'
+import GameResults from '@/components/GameResults.vue'
 
 // Emits definition
 const emit = defineEmits<{
@@ -32,8 +33,7 @@ const maxHeight = ref(0)
 
 function updateHeight() {
   if (pathRef.value) {
-    const currentHeight = pathRef.value.root ? pathRef.value.root.offsetHeight : pathRef.value.offsetHeight
-    console.log('Current path height:', currentHeight, pathRef.value)
+    const currentHeight = pathRef.value.offsetHeight
     if (currentHeight > maxHeight.value) {
       maxHeight.value = currentHeight
     }
@@ -123,39 +123,43 @@ function handleLevelComplete() {
 }
 
 function handleTimeExpired() {
-  // TODO: How to handle game over
-  console.log('Time expired - game over')
+  game_action.value = GameAction.game_over
 }
 </script>
 
 <template>
-  <div id="quate-game" :class="[gameActionToClass[game_action], 'level-' + (levels_completed + 1)]">
-    <div class="world-spacer">
-      <div class="path-clone"></div>
-    </div>
-    <div id="world">
-      <template v-if="[GameAction.menu, GameAction.starting].includes(game_action)">
-        <Menu @start-game="handleStartGame()" ref="pathRef" />
-      </template>
-      <template v-else>
+  <template v-if="game_action === GameAction.game_over">
+    <GameResults />
+  </template>
+  <template v-else>
+    <div id="quate-game" :class="[gameActionToClass[game_action], 'level-' + (levels_completed + 1)]">
+      <div class="world-spacer">
+        <div class="path-clone"></div>
+      </div>
+      <div id="world">
         <HudTop />
         <div
           id="path-container"
           ref="pathRef"
           :style="game_action === GameAction.ready ? undefined : {height: maxHeight + 'px'}"
         >
-          <div id="path-inner" :style="{height: maxHeight + 'px'}">
-            <EquationPath />
-          </div>
+          <template v-if="[GameAction.menu, GameAction.starting].includes(game_action)">
+            <Menu @start-game="handleStartGame()" />
+          </template>
+          <template v-else>
+            <div id="path-inner" :style="{height: maxHeight + 'px'}">
+              <EquationPath />
+            </div>
+          </template>
         </div>
         <HudBottom @submit="handleSubmitAnswer()" @timeout="handleTimeExpired()" />
         <LevelResults v-if="levels_completed > 0" />
-      </template>
+      </div>
+      <div class="world-spacer">
+        <div class="path-clone"></div>
+      </div>
     </div>
-    <div class="world-spacer">
-      <div class="path-clone"></div>
-    </div>
-  </div>
+  </template>
 </template>
 
 <style lang="scss">
@@ -220,7 +224,7 @@ function handleTimeExpired() {
       transition: height styles.$transitionStep;
 
       #path-inner,
-      #menu {
+      #menu-content {
         width: 100%;
         height: 100%;
         top: 0;
@@ -240,7 +244,7 @@ function handleTimeExpired() {
         height: 0;
 
         #path-inner,
-        #menu {
+        #menu-content {
           animation: path-inner-cycle styles.$transitionTotalSpeed styles.$transitionStepEase;
         }
       }

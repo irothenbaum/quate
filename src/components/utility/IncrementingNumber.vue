@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {ref, watch} from 'vue'
 import {TRANSITION_STEP_MS} from '@/constants/environment.ts'
+import {formatNumber} from '@/utilities'
 
 const STEP_TIME = 50
 
@@ -35,6 +36,8 @@ watch(
           clearInterval(interval)
           displayNumber.value = endNumber
         }
+
+        displayNumber.value = Math.round(displayNumber.value)
       }, STEP_TIME)
     }, props.animationDelay)
   },
@@ -43,7 +46,7 @@ watch(
 </script>
 
 <template>
-  <span>{{ Math.round(displayNumber) }}</span>
+  <span>{{ formatNumber(displayNumber) }}</span>
 </template>
 
 <style lang="scss">

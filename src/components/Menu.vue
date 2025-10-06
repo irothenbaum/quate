@@ -1,42 +1,33 @@
 <script setup lang="ts">
 import TermButton from '@/components/game/TermButton.vue'
-import {onMounted, ref} from 'vue'
-import MenuScreen from '@/components/MenuScreen.vue'
+import {ref} from 'vue'
+import {HIGH_SCORE_CACHE_KEY, TRANSITION_STEP_MS} from '@/constants/environment.ts'
+import IncrementingNumber from '@/components/utility/IncrementingNumber.vue'
 
 const emits = defineEmits<{
   (e: 'start-game'): void
 }>()
 
-const childRef = ref<InstanceType<typeof Child> | null>(null)
-const root = ref<HTMLDivElement | null>(null)
-
-onMounted(() => {
-  // forward the child's exposed root into our own
-  if (childRef.value) {
-    root.value = childRef.value.root
-  }
-})
-
-// expose again so *this* component’s parent can also use it
-defineExpose({root})
-
 const playSelected = ref<boolean>(false)
+
+const highScore = ref<number>(parseInt(localStorage[HIGH_SCORE_CACHE_KEY]) || 0) // Placeholder for high score
 
 function handleClick() {
   playSelected.value = true
-  emits('start-game')
+  setTimeout(() => {
+    emits('start-game')
+  }, TRANSITION_STEP_MS)
 }
 </script>
 
 <template>
-  <MenuScreen ref="childRef">
-    <div id="menu">
-      <div id="menu-content">
-        <h1>Quate</h1>
-        <TermButton :is-correct="playSelected" @click="handleClick"> Play </TermButton>
-      </div>
-    </div>
-  </MenuScreen>
+  <div id="menu-content">
+    <h1>Quate</h1>
+    <TermButton :is-correct="playSelected" @click="handleClick"> Play </TermButton>
+
+    <h3>High score:</h3>
+    <IncrementingNumber :number="highScore" :animation-duration="1000" />
+  </div>
 </template>
 
 <style scoped lang="scss">
@@ -53,6 +44,17 @@ function handleClick() {
     font-size: 6rem;
     line-height: 1em;
     margin-bottom: var(--space-xxl);
+  }
+
+  h3 {
+    font-size: var(--font-size-md);
+    color: var(--color-text);
+    margin-top: var(--space-xxl);
+    margin-bottom: var(--space-md);
+  }
+
+  span {
+    font-size: var(--font-size-xxl);
   }
 }
 </style>

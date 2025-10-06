@@ -15,3 +15,5 @@ export const STREAK_BONUS_RATIO = 0.1 // 10% bonus per streak
 
 export const WRONG_ANSWER_TIMEOUT = 2000 // ms to show wrong answer
 export const RIGHT_ANSWER_TIMEOUT = 1000 // ms to show right answer
+
+export const HIGH_SCORE_CACHE_KEY = 'QUATE_high_score'

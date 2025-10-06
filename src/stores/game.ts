@@ -1,4 +1,4 @@
-import {ref, computed} from 'vue'
+import {ref, computed, watch} from 'vue'
 import {defineStore} from 'pinia'
 import type {GameLevel, TermStep} from '@/types/game.ts'
 import {GameAction} from '@/types/game.ts'
@@ -28,10 +28,17 @@ export default defineStore('game', () => {
   const game_action = ref<number>(GameAction.menu)
   const time_remaining_ms = ref<number>(60000) // 1 minute start time
   const streak_count = ref<number>(0)
+  const longest_streak = ref<number>(0)
 
   const score = computed(() => unit_score.value + bonus_score.value)
   const levels_completed = computed(() => solutions.value.length)
   const level_state = ref<GameLevel>({...STARTING_LEVEL_STATE})
+
+  watch(streak_count, newVal => {
+    if (newVal > longest_streak.value) {
+      longest_streak.value = newVal
+    }
+  })
 
   // --------------------------------------------------------------------
   // ACTIONS
@@ -42,6 +49,10 @@ export default defineStore('game', () => {
     unit_score.value = 0
     bonus_score.value = 0
     solutions.value = []
+    streak_count.value = 0
+    longest_streak.value = 0
+    time_remaining_ms.value = 60000 // reset to 1 minute
+    game_action.value = GameAction.menu
   }
 
   function startNextLevel(nextLevel: GameLevel) {
@@ -121,6 +132,7 @@ export default defineStore('game', () => {
     game_action,
     time_remaining_ms,
     streak_count,
+    longest_streak,
 
     difficulty,
 
