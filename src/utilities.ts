@@ -184,7 +184,6 @@ export function generateLevelUsingTermSequence(levelNum: number, difficulty: num
     target: target,
     selected: [],
   }
-  console.log('Generated level', retVal, steps[0][0], start, target)
 
   return retVal
 }
@@ -235,7 +234,6 @@ export function generateLevel(levelNum: number, difficulty: number, start: numbe
     target: target,
     selected: [],
   }
-  console.log('Generated level', retVal, mergedSteps[0][0], start, target)
 
   return retVal
 }
