@@ -1,55 +1,41 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import {ref} from 'vue'
+
+const root = ref<HTMLDivElement | null>(null)
+
+// expose the DOM element to the parent
+defineExpose({root})
+</script>
 
 <template>
-  <div id="menu-screen">
-    <div class="hud-clone"></div>
-    <div class="menu-inner">
-      <slot />
-    </div>
-    <div class="hud-clone"></div>
+  <div class="hud-clone"></div>
+  <div class="menu-inner" ref="root">
+    <slot />
   </div>
+  <div class="hud-clone"></div>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss">
 @use '../styles';
 
-#menu-screen {
+.hud-clone {
+  // these styles match hud-top and hud-bottom styles in HudTop.vue and HudBottom.vue
+  z-index: 11;
+  height: var(--hud-height);
   width: 100%;
-  height: 100%;
-  @include styles.flex-column(0);
+  @include styles.flex-row(0);
+  padding: var(--space-md);
 
-  .menu-inner {
-    text-align: center;
-    @include styles.flex-column();
-    justify-content: center;
-    flex: 1;
-    height: 100%;
-    width: 100%;
-
-    // these styles match path-container styles in Quate.vue
-    background-color: var(--color-world);
-    box-shadow: inset 0 0 30px var(--color-world-shade);
+  @include styles.small-and-below() {
+    padding: var(--space-sm);
   }
 
-  .hud-clone {
-    // these styles match hud-top and hud-bottom styles in HudTop.vue and HudBottom.vue
-    position: relative;
-    height: var(--hud-height);
+  &:after {
+    content: '';
+    height: 100%;
     width: 100%;
-    @include styles.flex-row(0);
-    padding: var(--space-md);
-
-    @include styles.small-and-below() {
-      padding: var(--space-sm);
-    }
-
-    &:after {
-      content: '';
-      height: 100%;
-      width: 100%;
-      border-radius: var(--border-radius-md);
-      background-color: var(--color-world-shade);
-    }
+    border-radius: var(--border-radius-md);
+    background-color: var(--color-world-shade);
   }
 }
 </style>

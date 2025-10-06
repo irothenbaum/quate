@@ -4,7 +4,7 @@ import MenuScreen from '@/components/MenuScreen.vue'
 
 <template>
   <MenuScreen>
-    <div id="menu">
+    <div id="game-results">
       <h1>Game Over</h1>
 
       <h3>Results</h3>
@@ -15,7 +15,7 @@ import MenuScreen from '@/components/MenuScreen.vue'
 <style scoped lang="scss">
 @use '../styles';
 
-#menu {
+#game-results {
   @include styles.flex-column(0);
 
   h1 {

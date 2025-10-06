@@ -1,27 +1,40 @@
 <script setup lang="ts">
 import TermButton from '@/components/game/TermButton.vue'
-import {ref} from 'vue'
+import {onMounted, ref} from 'vue'
 import MenuScreen from '@/components/MenuScreen.vue'
 
 const emits = defineEmits<{
   (e: 'start-game'): void
 }>()
 
+const childRef = ref<InstanceType<typeof Child> | null>(null)
+const root = ref<HTMLDivElement | null>(null)
+
+onMounted(() => {
+  // forward the child's exposed root into our own
+  if (childRef.value) {
+    root.value = childRef.value.root
+  }
+})
+
+// expose again so *this* component’s parent can also use it
+defineExpose({root})
+
 const playSelected = ref<boolean>(false)
 
 function handleClick() {
   playSelected.value = true
-  setTimeout(() => {
-    emits('start-game')
-  }, 1000)
+  emits('start-game')
 }
 </script>
 
 <template>
-  <MenuScreen>
+  <MenuScreen ref="childRef">
     <div id="menu">
-      <h1>Quate</h1>
-      <TermButton :selected="playSelected" @click="handleClick"> Play </TermButton>
+      <div id="menu-content">
+        <h1>Quate</h1>
+        <TermButton :is-correct="playSelected" @click="handleClick"> Play </TermButton>
+      </div>
     </div>
   </MenuScreen>
 </template>
@@ -29,12 +42,16 @@ function handleClick() {
 <style scoped lang="scss">
 @use '../styles';
 
-#menu {
+#menu-content {
+  height: 100%;
+  width: 100%;
   @include styles.flex-column(0);
+  justify-content: center;
 
   h1 {
     color: var(--color-text);
     font-size: 6rem;
+    line-height: 1em;
     margin-bottom: var(--space-xxl);
   }
 }

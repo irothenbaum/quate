@@ -11,7 +11,7 @@ import Menu from '@/components/Menu.vue'
 import {
   FAST_RESPONSE_TIME_S,
   MAX_STREAK,
-  NEW_ROUND_DELAY_MS,
+  TRANSITION_STEP_MS,
   POINTS_PER_TERM,
   RIGHT_ANSWER_TIMEOUT,
   STREAK_BONUS_RATIO,
@@ -32,7 +32,8 @@ const maxHeight = ref(0)
 
 function updateHeight() {
   if (pathRef.value) {
-    const currentHeight = pathRef.value.offsetHeight
+    const currentHeight = pathRef.value.root ? pathRef.value.root.offsetHeight : pathRef.value.offsetHeight
+    console.log('Current path height:', currentHeight, pathRef.value)
     if (currentHeight > maxHeight.value) {
       maxHeight.value = currentHeight
     }
@@ -52,9 +53,18 @@ watch(
   },
 )
 
+onMounted(() => {
+  nextTick(() => {
+    updateHeight()
+  })
+})
+
 function handleStartGame() {
-  startNextLevel(generateLevel(0, difficulty.value, 0))
-  nextTick(updateHeight)
+  game_action.value = GameAction.starting
+  updateHeight()
+  setTimeout(() => {
+    startNextLevel(generateLevel(0, difficulty.value, 0))
+  }, TRANSITION_STEP_MS)
 }
 
 function handleSubmitAnswer() {
@@ -124,8 +134,8 @@ function handleTimeExpired() {
       <div class="path-clone"></div>
     </div>
     <div id="world">
-      <template v-if="game_action === GameAction.menu">
-        <Menu @start-game="handleStartGame()" />
+      <template v-if="[GameAction.menu, GameAction.starting].includes(game_action)">
+        <Menu @start-game="handleStartGame()" ref="pathRef" />
       </template>
       <template v-else>
         <HudTop />
@@ -148,7 +158,7 @@ function handleTimeExpired() {
   </div>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss">
 @use '../../styles';
 
 #quate-game {
@@ -174,7 +184,8 @@ function handleTimeExpired() {
   }
 
   .path-clone,
-  #path-container {
+  #path-container,
+  .menu-inner {
     position: relative;
 
     &:after {
@@ -198,7 +209,8 @@ function handleTimeExpired() {
     width: 100%;
     max-width: var(--screen-medium-min);
 
-    #path-container {
+    #path-container,
+    .menu-inner {
       width: 100%;
       height: 100%;
       flex: 1;
@@ -207,7 +219,8 @@ function handleTimeExpired() {
       box-shadow: inset 0 0 30px var(--color-world-shade);
       transition: height styles.$transitionStep;
 
-      #path-inner {
+      #path-inner,
+      #menu {
         width: 100%;
         height: 100%;
         top: 0;
@@ -216,22 +229,26 @@ function handleTimeExpired() {
     }
   }
 
-  &.transitioning-level {
+  &.transitioning-level,
+  &.starting {
     #world,
     .world-spacer {
       animation: world-cycle styles.$transitionTotalSpeed styles.$transitionStepEase;
 
-      #path-container {
+      #path-container,
+      .menu-inner {
         height: 0;
 
-        #path-inner {
+        #path-inner,
+        #menu {
           animation: path-inner-cycle styles.$transitionTotalSpeed styles.$transitionStepEase;
         }
       }
     }
 
     .path-clone,
-    #path-container {
+    #path-container,
+    .menu-inner {
       &:after {
         animation: brighten-cycle styles.$transitionTotalSpeed styles.$transitionStepEase;
       }
