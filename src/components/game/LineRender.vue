@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {computed} from 'vue'
 import type {LineCoords} from '@/types/game.ts'
+import type {CSSProperties} from 'vue'
 
 export interface LineSettings {
   thickness?: number
@@ -34,11 +35,11 @@ const rotation = computed(() => {
   return (Math.atan2(deltaY, deltaX) * 180) / Math.PI + 90
 })
 
-const styles = computed<Partial<CSSStyleDeclaration>>(() => {
+const styles = computed<CSSProperties>(() => {
   const midX = (props.coords.x0 + props.coords.x1) / 2
   const midY = (props.coords.y0 + props.coords.y1) / 2
 
-  const retVal: Partial<CSSStyleDeclaration> = {
+  const retVal: CSSProperties = {
     left: `${midX}px`,
     top: `${midY}px`,
     transform: `translate(-50%, -50%) rotate(${rotation.value}deg)`,
@@ -58,12 +59,7 @@ const styles = computed<Partial<CSSStyleDeclaration>>(() => {
 </script>
 
 <template>
-  <div
-    :class="{pathway: true, 'with-caps': props.withCaps}"
-    :style="{
-      ...styles,
-    }"
-  >
+  <div :class="{pathway: true, 'with-caps': props.withCaps}" :style="styles">
     <slot />
   </div>
 </template>

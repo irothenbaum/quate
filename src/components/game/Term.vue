@@ -22,7 +22,7 @@ const emits = defineEmits<{
   (e: 'click'): void
 }>()
 
-const childRef = ref<InstanceType<typeof Child> | null>(null)
+const childRef = ref<InstanceType<typeof TermButton> | null>(null)
 const root = ref<HTMLDivElement | null>(null)
 
 onMounted(() => {

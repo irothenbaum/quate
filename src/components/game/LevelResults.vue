@@ -1,13 +1,8 @@
 <script setup lang="ts">
-import Button from './utility/Button.vue'
-import {ROUTE_PLAY_QUATE} from '@/constants/routes.ts'
-import {OUTLINED_VARIANT} from '@/constants/variants.ts'
-import NumberInput from '@/components/utility/NumberInput.vue'
 import {useGameStore} from '@/composables/useGameStore.ts'
 import {NEXT_ROUND_TIME_BONUS_MS} from '@/constants/environment.ts'
 import {TIMER, POINTS, STREAK} from '@/constants/icons.ts'
 import {ref, watch} from 'vue'
-import IncrementingNumber from '@/components/utility/IncrementingNumber.vue'
 
 const {score, streak_count} = useGameStore()
 const lastScore = ref(0)
