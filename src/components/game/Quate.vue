@@ -268,8 +268,8 @@ function handleTimeExpired() {
     background-color: var(--color-primary),
   ),
   (
-    padding-top: calc(50vh - var(--hud-height)),
-    padding-bottom: calc(50vh - var(--hud-height)),
+    padding-top: calc(50dvh - var(--hud-height)),
+    padding-bottom: calc(50dvh - var(--hud-height)),
     background-color: #204435,
   )
 );
@@ -280,7 +280,7 @@ function handleTimeExpired() {
     top: 0,
   ),
   (
-    top: calc(-50vh + var(--hud-height)),
+    top: calc(-50dvh + var(--hud-height)),
   )
 );
 

@@ -1,20 +1,27 @@
 {
-  "name": "Steel Neil",
-  "short_name": "steelneil",
-  "start_url": "/athlete",
+  "name": "Quate",
+  "short_name": "quate",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#333333",
+  "theme_color": "#47ad83",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "./logo_192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon-512.png",
+      "src": "./logo_512.png",
       "sizes": "512x512",
       "type": "image/png"
+    },
+    {
+      "src": "./logo_512_masked.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

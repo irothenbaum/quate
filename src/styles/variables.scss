@@ -1,3 +1,5 @@
+@use './layout';
+
 // these should match constants/environment.ts
 $transitionStepSpeed: 0.5s;
 $transitionResultsSpeed: 3s;
@@ -110,4 +112,11 @@ $transitionResults: $transitionResultsSpeed $transitionStepEase;
   --hud-height: max(var(--row-height), var(--hud-min-height));
 
   --term-size: 7rem;
+}
+
+@include layout.small-and-below {
+  :root {
+    --base-font-size: 12px;
+    --hud-min-height: 6rem;
+  }
 }

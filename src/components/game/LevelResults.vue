@@ -84,15 +84,8 @@ watch(
     flex: 1;
     text-align: center;
     text-shadow: 6px 6px 20px var(--color-shadow);
-    font-size: calc(var(--base-font-size) * 2.5);
+    font-size: var(--font-size-xl);
     line-height: 1.5em;
-
-    @include styles.medium-and-below() {
-      font-size: calc(var(--base-font-size) * 3.5);
-    }
-    @include styles.small-and-below() {
-      font-size: calc(var(--base-font-size) * 3);
-    }
 
     i {
       font-size: var(--font-size-lg);

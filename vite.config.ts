@@ -16,4 +16,9 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  server: {
+    host: true, // allows external connections
+    cors: true,
+    origin: 'https://90775ee8cc9d.ngrok-free.app',
+  },
 })
