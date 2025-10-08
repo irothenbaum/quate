@@ -47,6 +47,7 @@
 }
 
 @mixin no-text-select() {
+    -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Chrome/Safari/Opera */
     -khtml-user-select: none; /* Konqueror HTML */

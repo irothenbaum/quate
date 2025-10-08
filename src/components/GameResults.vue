@@ -54,7 +54,6 @@ const timeUpStr = `time up `.repeat(500)
 @use '../styles';
 
 #game-results {
-  @include styles.no-text-select();
   @include styles.hero-center();
   background-color: var(--color-tertiary);
 

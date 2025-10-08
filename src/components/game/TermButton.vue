@@ -53,7 +53,6 @@ $boxShadowSettings: 0 0 10px 0;
 }
 
 .term {
-  @include styles.no-text-select();
   cursor: pointer;
   border-radius: 50%;
   height: var(--term-size);

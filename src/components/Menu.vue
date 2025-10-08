@@ -22,11 +22,13 @@ function handleClick() {
 
 <template>
   <div id="menu-content">
-    <h1>Quate</h1>
-    <TermButton :is-correct="playSelected" @click="handleClick"> Play </TermButton>
+    <div style="overflow: hidden">
+      <h1>Quate</h1>
+      <TermButton :is-correct="playSelected" @click="handleClick"> Play </TermButton>
 
-    <h3>High score:</h3>
-    <IncrementingNumber :number="highScore" :animation-duration="1000" />
+      <h3>High score:</h3>
+      <IncrementingNumber :number="highScore" :animation-duration="1000" />
+    </div>
   </div>
 </template>
 
@@ -34,10 +36,12 @@ function handleClick() {
 @use '../styles';
 
 #menu-content {
-  height: 100%;
-  width: 100%;
-  @include styles.flex-column(0);
-  justify-content: center;
+  & > div {
+    height: 100%;
+    width: 100%;
+    @include styles.flex-column(0);
+    justify-content: center;
+  }
 
   h1 {
     color: var(--color-text);
