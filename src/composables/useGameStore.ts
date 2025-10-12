@@ -18,6 +18,7 @@ interface GameState {
   levels_completed: Ref<number> // computed from solutions.length + 1
   level_state: Ref<GameLevel> // will be empty at the start/end of the game
   game_action: Ref<GameAction> // current game action, i.e., UI state
+  last_game_action: Ref<GameAction | null> // previous game action, useful for transitions
   streak_count: Ref<number>
   longest_streak: Ref<number>
   time_remaining_ms: Ref<number> // time remaining in milliseconds

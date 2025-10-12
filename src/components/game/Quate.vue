@@ -8,6 +8,7 @@ import EquationPath from '@/components/game/EquationPath.vue'
 import {applyTermStep, generateLevel, gameActionToClass} from '@/utilities.ts'
 import {GameAction} from '@/types/game.ts'
 import Menu from '@/components/Menu.vue'
+import Tutorial from '@/components/Tutorial.vue'
 import {
   FAST_RESPONSE_TIME_S,
   MAX_STREAK,
@@ -16,6 +17,7 @@ import {
   RIGHT_ANSWER_TIMEOUT,
   STREAK_BONUS_RATIO,
   WRONG_ANSWER_TIMEOUT,
+  TRANSITION_RESULTS_MS,
 } from '@/constants/environment.ts'
 import GameResults from '@/components/GameResults.vue'
 
@@ -25,9 +27,18 @@ const emit = defineEmits<{
 }>()
 
 const pathRef = ref<HTMLDivElement | null>(null)
+const forceClose = ref<boolean>(false)
 const hasFirstGuessBonus = ref<boolean>(true)
-const {level_state, levels_completed, difficulty, increaseScore, startNextLevel, game_action, streak_count} =
-  useGameStore()
+const {
+  level_state,
+  levels_completed,
+  difficulty,
+  increaseScore,
+  startNextLevel,
+  game_action,
+  last_game_action,
+  streak_count,
+} = useGameStore()
 
 const maxHeight = ref(0)
 
@@ -58,6 +69,25 @@ onMounted(() => {
     updateHeight()
   })
 })
+
+function handleTutorialComplete() {
+  game_action.value = GameAction.starting
+  setTimeout(() => {
+    game_action.value = GameAction.menu
+  }, TRANSITION_STEP_MS)
+}
+
+function handleStartTutorial() {
+  updateHeight()
+  game_action.value = GameAction.starting
+  forceClose.value = true
+  setTimeout(() => {
+    game_action.value = GameAction.tutorial
+    setTimeout(() => {
+      forceClose.value = false
+    }, TRANSITION_STEP_MS)
+  }, TRANSITION_STEP_MS)
+}
 
 function handleStartGame() {
   game_action.value = GameAction.starting
@@ -132,7 +162,10 @@ function handleTimeExpired() {
     <GameResults />
   </template>
   <template v-else>
-    <div id="quate-game" :class="[gameActionToClass[game_action], 'level-' + (levels_completed + 1)]">
+    <div
+      id="quate-game"
+      :class="[gameActionToClass[game_action], 'level-' + (levels_completed + 1), forceClose ? 'closed' : '']"
+    >
       <div class="world-spacer">
         <div class="path-clone"></div>
       </div>
@@ -143,14 +176,17 @@ function handleTimeExpired() {
           ref="pathRef"
           :style="game_action === GameAction.ready ? undefined : {height: maxHeight + 'px'}"
         >
-          <template v-if="[GameAction.menu, GameAction.starting].includes(game_action)">
-            <Menu @start-game="handleStartGame()" />
-          </template>
-          <template v-else>
-            <div id="path-inner" :style="{height: maxHeight + 'px'}">
+          <div id="path-inner" :style="{height: maxHeight + 'px'}">
+            <template v-if="game_action === GameAction.menu || last_game_action === GameAction.menu">
+              <Menu @start-game="handleStartGame()" @start-tutorial="handleStartTutorial()" />
+            </template>
+            <template v-else-if="game_action === GameAction.tutorial || last_game_action === GameAction.tutorial">
+              <Tutorial @tutorial-complete="handleTutorialComplete()" />
+            </template>
+            <template v-else>
               <EquationPath />
-            </div>
-          </template>
+            </template>
+          </div>
         </div>
         <HudBottom @submit="handleSubmitAnswer()" @timeout="handleTimeExpired()" />
         <LevelResults v-if="levels_completed > 0" />
@@ -170,6 +206,25 @@ function handleTimeExpired() {
   width: 100%;
   @include styles.flex-row(0);
 
+  #world,
+  .world-spacer {
+    transition:
+      padding-top styles.$transitionStep,
+      padding-bottom styles.$transitionStep,
+      background-color styles.$transitionStep;
+  }
+
+  #path-inner {
+    transition: top styles.$transitionStep;
+  }
+
+  .path-clone,
+  #path-container {
+    &:after {
+      transition: opacity styles.$transitionStep;
+    }
+  }
+
   .world-spacer {
     flex: 1;
     height: 100%;
@@ -188,8 +243,7 @@ function handleTimeExpired() {
   }
 
   .path-clone,
-  #path-container,
-  .menu-inner {
+  #path-container {
     position: relative;
 
     &:after {
@@ -213,8 +267,7 @@ function handleTimeExpired() {
     width: 100%;
     max-width: var(--screen-medium-min);
 
-    #path-container,
-    .menu-inner {
+    #path-container {
       width: 100%;
       height: 100%;
       flex: 1;
@@ -223,8 +276,7 @@ function handleTimeExpired() {
       box-shadow: inset 0 0 30px var(--color-world-shade);
       transition: height styles.$transitionStep;
 
-      #path-inner,
-      #menu-content {
+      #path-inner {
         width: 100%;
         height: 100%;
         top: 0;
@@ -239,22 +291,45 @@ function handleTimeExpired() {
     .world-spacer {
       animation: world-cycle styles.$transitionTotalSpeed styles.$transitionStepEase;
 
-      #path-container,
-      .menu-inner {
+      #path-container {
         height: 0;
 
-        #path-inner,
-        #menu-content {
+        #path-inner {
           animation: path-inner-cycle styles.$transitionTotalSpeed styles.$transitionStepEase;
         }
       }
     }
 
     .path-clone,
-    #path-container,
-    .menu-inner {
+    #path-container {
       &:after {
         animation: brighten-cycle styles.$transitionTotalSpeed styles.$transitionStepEase;
+      }
+    }
+  }
+
+  &.closed {
+    // these need to match the end state of the animations
+    #world,
+    .world-spacer {
+      padding-top: calc(50dvh - var(--hud-height));
+      padding-bottom: calc(50dvh - var(--hud-height));
+      background-color: #204435;
+
+      #path-container {
+        height: 0;
+
+        #path-inner {
+          top: calc(-50dvh + var(--hud-height));
+          transition: top styles.$transitionStep;
+        }
+      }
+    }
+    .path-clone,
+    #path-container {
+      &:after {
+        opacity: 1;
+        transition: opacity styles.$transitionStep;
       }
     }
   }

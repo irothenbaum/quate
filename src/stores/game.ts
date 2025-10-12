@@ -32,6 +32,10 @@ export default defineStore('game', () => {
 
   const score = computed(() => unit_score.value + bonus_score.value)
   const levels_completed = computed(() => solutions.value.length)
+  const last_game_action = ref<GameAction | null>(null)
+  watch(game_action, (newVal, oldVal) => {
+    last_game_action.value = oldVal
+  })
   const level_state = ref<GameLevel>({...STARTING_LEVEL_STATE})
 
   watch(streak_count, newVal => {
@@ -129,6 +133,7 @@ export default defineStore('game', () => {
     levels_completed,
     solutions,
     game_action,
+    last_game_action,
     time_remaining_ms,
     streak_count,
     longest_streak,

@@ -88,7 +88,9 @@ watch(
     <div :class="{'score-container': true, large: score >= 10000}">
       <div class="container-inner">
         <i :class="POINTS" />
-        <IncrementingNumber :number="score" :animation-delay="TRANSITION_STEP_MS + TRANSITION_RESULTS_MS / 2" />
+        <div>
+          <IncrementingNumber :number="score" :animation-delay="TRANSITION_STEP_MS + TRANSITION_RESULTS_MS / 2" />
+        </div>
       </div>
     </div>
   </div>

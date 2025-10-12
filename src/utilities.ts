@@ -249,6 +249,8 @@ export const operationToLabel = {
 export const gameActionToClass = {
   [GameAction.menu]: 'menu',
   [GameAction.ready]: 'ready',
+  [GameAction.game_over]: 'game-over',
+  [GameAction.tutorial]: 'tutorial',
   [GameAction.starting]: 'starting',
   [GameAction.submission_correct]: 'submission-correct',
   [GameAction.submission_incorrect]: 'submission-incorrect',

@@ -9,6 +9,7 @@ export enum Operation {
 export enum GameAction {
   menu,
   starting,
+  tutorial,
   ready,
   submission_correct,
   submission_incorrect,
