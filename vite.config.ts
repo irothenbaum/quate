@@ -1,5 +1,5 @@
 import {fileURLToPath, URL} from 'node:url'
-
+import {VitePWA} from 'vite-plugin-pwa'
 import {defineConfig} from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
@@ -9,6 +9,30 @@ export default defineConfig({
   base: './',
   plugins: [
     vue(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      manifest: {
+        name: 'Quate',
+        short_name: 'quate',
+        start_url: './index.html',
+        scope: './',
+        display: 'standalone',
+        background_color: '#333333',
+        theme_color: '#47ad83',
+        icons: [
+          {
+            src: './logo_192.png',
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: './logo_512.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
+        ],
+      },
+    }),
     // vueDevTools()
   ],
   resolve: {
