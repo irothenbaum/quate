@@ -13,6 +13,7 @@ export const OPTIONS: string = PrimeIcons.ELLIPSIS_V
 export const PREVIOUS: string = PrimeIcons.ANGLE_DOUBLE_LEFT
 export const NEXT: string = PrimeIcons.ANGLE_DOUBLE_RIGHT
 export const ARROW_DOWN: string = PrimeIcons.CHEVRON_DOWN
+export const ARROW_UP: string = PrimeIcons.CHEVRON_UP
 export const PLUS: string = PrimeIcons.PLUS
 export const CLOSE: string = PrimeIcons.TIMES
 export const TRASH: string = PrimeIcons.TRASH

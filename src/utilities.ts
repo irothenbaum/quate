@@ -155,10 +155,16 @@ const totalTermsSequence = [
   [2, 3, 2],
   [2, 3, 2],
 ]
-// this function generates level with random term values, but whose term orders are set by the term Sequence array
-export function generateLevelUsingTermSequence(levelNum: number, difficulty: number, start: number): GameLevel {
+
+export function generateLevelUsingTermSequence(levelNum: number, start: number, difficulty: number): GameLevel {
   const max = difficulty + 10 * levelNum
   const sequence = totalTermsSequence[levelNum]
+
+  return generateLevelSteps(levelNum, start, max, sequence)
+}
+
+// this function generates level with random term values, but whose term orders are set by the term Sequence array
+export function generateLevelSteps(levelNum: number, start: number, max: number, sequence: Array<number>): GameLevel {
   let target: number = start
   const steps: Array<Array<TermStep>> = []
 

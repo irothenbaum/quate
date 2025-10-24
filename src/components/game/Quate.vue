@@ -5,7 +5,7 @@ import HudBottom from '@/components/game/HudBottom.vue'
 import LevelResults from '@/components/game/LevelResults.vue'
 import {useGameStore} from '@/composables/useGameStore.ts'
 import EquationPath from '@/components/game/EquationPath.vue'
-import {applyTermStep, generateLevel, gameActionToClass} from '@/utilities.ts'
+import {applyTermStep, generateLevel, gameActionToClass, applyTermSteps} from '@/utilities.ts'
 import {GameAction} from '@/types/game.ts'
 import Menu from '@/components/Menu.vue'
 import Tutorial from '@/components/Tutorial.vue'
@@ -99,14 +99,12 @@ function handleStartGame() {
 
 function handleSubmitAnswer() {
   // check if the selected terms lead to the target
-  let currentValue = level_state.value.start
-  for (let i = 0; i < level_state.value.selected.length; i++) {
-    const termIndex = level_state.value.selected[i]
-    const term = level_state.value.steps[i][termIndex]
-    currentValue = applyTermStep(currentValue, term)
-  }
+  const answerValue = applyTermSteps(
+    level_state.value.start,
+    level_state.value.selected.map((termIndex, stepIndex) => level_state.value.steps[stepIndex][termIndex]),
+  )
 
-  if (currentValue === level_state.value.target) {
+  if (answerValue === level_state.value.target) {
     // correct!
     game_action.value = GameAction.submission_correct
     // mark it completed immediately
@@ -188,7 +186,7 @@ function handleTimeExpired() {
             </template>
           </div>
         </div>
-        <HudBottom @submit="handleSubmitAnswer()" @timeout="handleTimeExpired()" />
+        <HudBottom @timeout="handleTimeExpired()" />
         <LevelResults v-if="levels_completed > 0" />
       </div>
       <div class="world-spacer">

@@ -9,7 +9,6 @@ import {TRANSITION_TOTAL_MS, TRANSITION_STEP_MS, TRANSITION_RESULTS_MS} from '@/
 import IncrementingNumber from '@/components/utility/IncrementingNumber.vue'
 
 const emit = defineEmits<{
-  // (e: 'submit'): void
   (e: 'timeout'): void
 }>()
 const {level_state, game_action, time_remaining_ms, score} = useGameStore()
@@ -37,7 +36,11 @@ watch(
         clearInterval(timer.value)
       }
       timer.value = setInterval(() => {
-        if (game_action.value === GameAction.ready && clockTimeMs.value !== null) {
+        if (
+          // we continue ticking through an incorrect submission to show remaining time
+          [GameAction.ready, GameAction.submission_incorrect].includes(game_action.value) &&
+          clockTimeMs.value !== null
+        ) {
           clockTimeMs.value = Math.max(0, (level_state.value.expiration_timestamp || 0) - Date.now())
           if (clockTimeMs.value <= 0) {
             // time's up

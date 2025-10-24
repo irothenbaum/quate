@@ -8,11 +8,18 @@ import {HIGH_SCORE_CACHE_KEY} from '@/constants/environment.ts'
 const isHidden = ref<boolean>(true)
 const {levels_completed, score, longest_streak, restartGame} = useGameStore()
 
+const buttonDisabled = ref<boolean>(true)
+
 onMounted(() => {
   setTimeout(() => {
     isHidden.value = false
 
-    localStorage.setItem(HIGH_SCORE_CACHE_KEY, score.value.toString())
+    const nextHS = Math.max(parseInt(localStorage.getItem(HIGH_SCORE_CACHE_KEY) || '0'), score.value)
+    localStorage.setItem(HIGH_SCORE_CACHE_KEY, nextHS.toString())
+
+    setTimeout(() => {
+      buttonDisabled.value = false
+    }, 2000)
   }, 1200)
 })
 
@@ -40,7 +47,7 @@ const timeUpStr = `time up `.repeat(500)
           </li>
         </ul>
         <div class="buttons-container">
-          <div class="button" @click="restartGame()">Main menu</div>
+          <div :class="{button: true, disabled: buttonDisabled}" @click="restartGame()"><span>Main menu</span></div>
         </div>
       </div>
     </div>
@@ -150,6 +157,8 @@ const timeUpStr = `time up `.repeat(500)
   }
 
   .button {
+    @include styles.sliver-button(var(--color-white), var(--color-white-tint), var(--color-tertiary));
+
     padding: var(--space-md) var(--space-xl);
     background-color: var(--color-white);
     color: var(--color-tertiary);

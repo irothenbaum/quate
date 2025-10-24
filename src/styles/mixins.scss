@@ -87,6 +87,41 @@
 }
 
 
+@mixin sliver-button($bgColor, $hoverColor, $disabledColor) {
+  padding: var(--space-sm) var(--space-md);
+  position: relative;
+  color: white;
+  cursor: pointer;
+  line-height: 1em;
+
+  span {
+    position: relative;
+    z-index: 2;
+  }
+
+  &:before {
+    content: '';
+    display: block;
+    border-radius: var(--border-radius-md);
+    background-color: $bgColor;
+    transition: all 0.3s ease;
+    @include overlay();
+  }
+
+  &:hover:before {
+    background-color: $hoverColor;
+  }
+
+  &.disabled {
+    pointer-events: none;
+    &:before {
+      background-color: $disabledColor;
+      height: 6px;
+      top: calc(50% - 3px);
+    }
+  }
+}
+
 // Helper function: cumulative percentage at a given index
 @function cumulative-perc($list, $index) {
   $sum: 0;
