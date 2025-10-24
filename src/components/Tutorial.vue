@@ -109,11 +109,11 @@ const titles: Record<number, string> = {
   [STEP_TERM_1_CONFIRM]: 'Great job!',
   [STEP_TERM_2]: 'Click two terms',
   [STEP_TERM_2_CONFIRM]: 'Nice!',
-  [STEP_HUD_SCORE]: 'Your Score',
-  [STEP_HUD_LEVEL]: 'Current Level',
-  [STEP_HUD_TIMER]: 'Time Remaining',
-  [STEP_HUD_STREAK]: 'Streak Count',
-  [STEP_BYE_BYE]: 'Good Luck, Have Fun!',
+  [STEP_HUD_SCORE]: 'Your score',
+  [STEP_HUD_LEVEL]: 'Current level',
+  [STEP_HUD_TIMER]: 'Time remaining',
+  [STEP_HUD_STREAK]: 'Streak count',
+  [STEP_BYE_BYE]: 'Good luck, have fun!',
 }
 
 const messages: Record<number, string> = {
@@ -123,12 +123,12 @@ const messages: Record<number, string> = {
   [STEP_EQUATION_PATH]: "Your term path will appear here. Let's look at an example",
   [STEP_TERM_1]: 'Which of these terms can be applied to the start number in order to equal the end number?',
   [STEP_TERM_1_CONFIRM]: 'You applied the right term to reach the target number',
-  [STEP_TERM_2]: "Here you'll need to select two terms: one from each row",
+  [STEP_TERM_2]: "Next you'll need to select two terms: one from each row, starting from the top",
   [STEP_TERM_2_CONFIRM]: 'You selected the correct terms to reach the target number. Just a couple more things...',
   [STEP_HUD_SCORE]: 'Your score increases based on how quickly and accurately you complete equations',
   [STEP_HUD_LEVEL]: 'As you complete equations, your level will increase, making the game more challenging',
   [STEP_HUD_TIMER]: 'You have a limited amount of time to complete each equation. Keep an eye on the timer!',
-  [STEP_HUD_STREAK]: 'Answering correctly increases your streak, which boosts your score multiplier!',
+  [STEP_HUD_STREAK]: 'Answering correctly increases your streak, which boosts your score multiplier',
   [STEP_BYE_BYE]: 'You are ready to start your Quate adventure. May the Maths be with you!',
 }
 

@@ -157,20 +157,22 @@ const timeUpStr = `time up `.repeat(500)
   }
 
   .button {
-    @include styles.sliver-button(var(--color-white), var(--color-white-tint), var(--color-tertiary));
-
+    @include styles.sliver-button(var(--color-white), var(--color-white), var(--color-white));
+    transition: all 0.2s ease-in-out;
     padding: var(--space-md) var(--space-xl);
-    background-color: var(--color-white);
     color: var(--color-tertiary);
     text-shadow: none;
     font-size: 2rem;
-    border-radius: var(--border-radius-md);
-    cursor: pointer;
-    box-shadow: 0 0 10px var(--color-glow);
-    transition: all 0.2s ease-in-out;
+
+    &:before {
+      box-shadow: 0 0 0 var(--color-glow);
+    }
 
     &:hover {
-      transform: scale(1.05);
+      transform: translateY(-2px);
+      &:before {
+        box-shadow: 0 0 20px var(--color-glow);
+      }
     }
   }
 }

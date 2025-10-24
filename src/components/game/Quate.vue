@@ -72,8 +72,12 @@ onMounted(() => {
 
 function handleTutorialComplete() {
   game_action.value = GameAction.starting
+  forceClose.value = true
   setTimeout(() => {
     game_action.value = GameAction.menu
+    setTimeout(() => {
+      forceClose.value = false
+    }, TRANSITION_STEP_MS)
   }, TRANSITION_STEP_MS)
 }
 
@@ -90,8 +94,8 @@ function handleStartTutorial() {
 }
 
 function handleStartGame() {
-  game_action.value = GameAction.starting
   updateHeight()
+  game_action.value = GameAction.starting
   setTimeout(() => {
     startNextLevel(generateLevel(0, difficulty.value, 0))
   }, TRANSITION_STEP_MS)
