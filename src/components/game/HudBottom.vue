@@ -7,20 +7,47 @@ import {TIMER, POINTS} from '@/constants/icons.ts'
 import {GameAction} from '@/types/game.ts'
 import {TRANSITION_TOTAL_MS, TRANSITION_STEP_MS, TRANSITION_RESULTS_MS} from '@/constants/environment.ts'
 import IncrementingNumber from '@/components/utility/IncrementingNumber.vue'
+import {useTutorialStore} from '@/composables/useTutorialStore.ts'
 
 const emit = defineEmits<{
   (e: 'timeout'): void
 }>()
 const {level_state, game_action, time_remaining_ms, score} = useGameStore()
-
+const {timer_ms, target_number, target_tail_is_selected, tails_are_correct, score: tut_score} = useTutorialStore()
 const clockTimeMs = ref<number>(0)
-const targetIsSelected = computed(() => level_state.value.selected.length === level_state.value.steps.length)
 const timer = ref<number>(0) // setInerval ID
+
+const renderSettings = computed(() => {
+  return game_action.value === GameAction.tutorial
+    ? {
+        score: tut_score.value,
+        target_number: target_number.value,
+        target_tail_is_selected: target_tail_is_selected.value,
+        tails_are_correct: tails_are_correct.value === 1,
+        target_tail_is_incorrect: tails_are_correct.value === -1,
+        scoreTransitionDelay: 0,
+      }
+    : {
+        score: score.value,
+        target_number: level_state.value.target,
+        target_tail_is_selected: level_state.value.selected.length === level_state.value.steps.length,
+        tails_are_correct:
+          game_action.value === GameAction.submission_correct || isTransitioningLevel(game_action.value),
+        target_tail_is_incorrect: game_action.value === GameAction.submission_incorrect,
+        scoreTransitionDelay: TRANSITION_STEP_MS + TRANSITION_RESULTS_MS / 2,
+      }
+})
+
+// this is separated out because it will be updated more frequently
+const renderClockTimeMS = computed<number>(() => {
+  return (game_action.value === GameAction.tutorial ? timer_ms.value : clockTimeMs.value) || 0
+})
+
 const timeParts = computed<string[]>(() => {
-  if (clockTimeMs.value === null) {
+  if (renderClockTimeMS.value === null) {
     return ['--', '--']
   }
-  return formatTime(clockTimeMs.value)
+  return formatTime(renderClockTimeMS.value)
 })
 
 watch(
@@ -63,7 +90,7 @@ watch(
     <div
       :class="{
         'timer-container': true,
-        low: clockTimeMs !== null && clockTimeMs <= 10000,
+        low: renderClockTimeMS <= 10000,
         wrong: game_action === GameAction.submission_incorrect,
       }"
     >
@@ -77,22 +104,21 @@ watch(
     <div
       :class="{
         'target-container': true,
-        active: targetIsSelected,
-        correct:
-          (targetIsSelected && game_action === GameAction.submission_correct) || isTransitioningLevel(game_action),
-        incorrect: targetIsSelected && game_action === GameAction.submission_incorrect,
+        active: renderSettings.target_tail_is_selected,
+        correct: renderSettings.tails_are_correct,
+        incorrect: renderSettings.target_tail_is_incorrect,
       }"
     >
       <div class="target-tail"></div>
       <div class="container-inner">
-        <IncrementingNumber :number="level_state.target" class="target" />
+        <IncrementingNumber :number="renderSettings.target_number" class="target" />
       </div>
     </div>
-    <div :class="{'score-container': true, large: score >= 10000}">
+    <div :class="{'score-container': true, large: renderSettings.score >= 10000}">
       <div class="container-inner">
         <i :class="POINTS" />
         <div>
-          <IncrementingNumber :number="score" :animation-delay="TRANSITION_STEP_MS + TRANSITION_RESULTS_MS / 2" />
+          <IncrementingNumber :number="renderSettings.score" :animation-delay="renderSettings.scoreTransitionDelay" />
         </div>
       </div>
     </div>

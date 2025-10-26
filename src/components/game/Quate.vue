@@ -20,6 +20,7 @@ import {
   TRANSITION_RESULTS_MS,
 } from '@/constants/environment.ts'
 import GameResults from '@/components/GameResults.vue'
+import {useTutorialStore} from '@/composables/useTutorialStore.ts'
 
 // Emits definition
 const emit = defineEmits<{
@@ -27,7 +28,6 @@ const emit = defineEmits<{
 }>()
 
 const pathRef = ref<HTMLDivElement | null>(null)
-const forceClose = ref<boolean>(false)
 const hasFirstGuessBonus = ref<boolean>(true)
 const {
   level_state,
@@ -39,6 +39,7 @@ const {
   last_game_action,
   streak_count,
 } = useGameStore()
+const {force_close} = useTutorialStore()
 
 const maxHeight = ref(0)
 
@@ -72,11 +73,11 @@ onMounted(() => {
 
 function handleTutorialComplete() {
   game_action.value = GameAction.starting
-  forceClose.value = true
+  force_close.value = true
   setTimeout(() => {
     game_action.value = GameAction.menu
     setTimeout(() => {
-      forceClose.value = false
+      force_close.value = false
     }, TRANSITION_STEP_MS)
   }, TRANSITION_STEP_MS)
 }
@@ -84,11 +85,11 @@ function handleTutorialComplete() {
 function handleStartTutorial() {
   updateHeight()
   game_action.value = GameAction.starting
-  forceClose.value = true
+  force_close.value = true
   setTimeout(() => {
     game_action.value = GameAction.tutorial
     setTimeout(() => {
-      forceClose.value = false
+      force_close.value = false
     }, TRANSITION_STEP_MS)
   }, TRANSITION_STEP_MS)
 }
@@ -166,7 +167,7 @@ function handleTimeExpired() {
   <template v-else>
     <div
       id="quate-game"
-      :class="[gameActionToClass[game_action], 'level-' + (levels_completed + 1), forceClose ? 'closed' : '']"
+      :class="[gameActionToClass[game_action], 'level-' + (levels_completed + 1), force_close ? 'closed' : '']"
     >
       <div class="world-spacer">
         <div class="path-clone"></div>

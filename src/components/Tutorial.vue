@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import {watch, ref} from 'vue'
+import {watch, ref, watchEffect} from 'vue'
 import {GameAction, Operation} from '@/types/game.ts'
 import type {GameLevel, TermStep} from '@/types/game.ts'
 import {generateLevelSteps, applyTermSteps} from '@/utilities.ts'
-import {RIGHT_ANSWER_TIMEOUT, WRONG_ANSWER_TIMEOUT} from '@/constants/environment.ts'
+import {RIGHT_ANSWER_TIMEOUT, TRANSITION_STEP_MS, WRONG_ANSWER_TIMEOUT} from '@/constants/environment.ts'
 import RenderTermField from '@/components/game/RenderTermField.vue'
 import {ARROW_DOWN, ARROW_UP} from '@/constants/icons'
+import {useTutorialStore} from '@/composables/useTutorialStore.ts'
 
 const STEP_INTRO = 0
 const STEP_HUD_START = 1
@@ -29,6 +30,18 @@ const emits = defineEmits<{
   (e: 'tutorial-complete'): void
 }>()
 
+const {
+  start_tail_is_selected,
+  score,
+  streak,
+  target_number,
+  start_number,
+  level,
+  timer_ms,
+  target_tail_is_selected,
+  tails_are_correct,
+  force_close,
+} = useTutorialStore()
 const step = ref<number>(STEP_INTRO)
 const hideNext = ref<boolean>(true)
 const tutGameAction = ref<GameAction>(GameAction.ready)
@@ -38,6 +51,17 @@ const term2LevelState = ref<GameLevel>(generateLevelSteps(1, Math.ceil(Math.rand
 watch(
   step,
   newStep => {
+    if (newStep === STEP_TERM_SELECT_1) {
+      start_number.value = term1LevelState.value.start
+      target_number.value = term1LevelState.value.target
+      timer_ms.value = 60000
+    } else if (newStep === STEP_TERM_SELECT_2) {
+      start_number.value = term2LevelState.value.start
+      target_number.value = term2LevelState.value.target
+      timer_ms.value = 60000
+    }
+    level.value = newStep
+
     hideNext.value = true
     setTimeout(() => {
       hideNext.value = false
@@ -53,8 +77,56 @@ function handleNextClick() {
     emits('tutorial-complete')
     return
   }
-  step.value++
+
+  const nextStep = step.value + 1
+
+  if (nextStep === STEP_TERM_1_CONFIRM) {
+    // reset term selections for next level
+    term2LevelState.value.selected = []
+  } else if (nextStep === STEP_TERM_2_CONFIRM) {
+    // reset term selections for next level
+    term1LevelState.value.selected = []
+  }
+
+  if ([STEP_TERM_SELECT_1, STEP_TERM_SELECT_2, STEP_TERM_1_CONFIRM, STEP_TERM_2_CONFIRM].includes(nextStep)) {
+    // if we're transitioning into these, we want to do a little close animation
+    force_close.value = true
+    setTimeout(() => {
+      step.value = nextStep
+      setTimeout(() => {
+        force_close.value = false
+      }, TRANSITION_STEP_MS)
+    }, TRANSITION_STEP_MS)
+  } else {
+    step.value = nextStep
+  }
 }
+
+watchEffect(() => {
+  if (![STEP_TERM_SELECT_1, STEP_TERM_SELECT_2].includes(step.value)) {
+    tails_are_correct.value = 0
+    start_tail_is_selected.value = false
+    target_tail_is_selected.value = false
+    start_number.value = 0
+    target_number.value = 0
+    tutGameAction.value = GameAction.ready
+    return
+  }
+
+  const level_state = step.value === STEP_TERM_SELECT_1 ? term1LevelState : term2LevelState
+
+  // reset game action when step changes
+  start_tail_is_selected.value = level_state.value.selected.length > 0
+  target_tail_is_selected.value = level_state.value.selected.length === level_state.value.steps.length
+
+  // check if the selected terms lead to the target
+  const answerValue = applyTermSteps(
+    level_state.value.start,
+    level_state.value.selected.map((termIndex, stepIndex) => level_state.value.steps[stepIndex][termIndex]),
+  )
+
+  tails_are_correct.value = !target_tail_is_selected.value ? 0 : answerValue === level_state.value.target ? 1 : -1
+})
 
 function handleClickTerm(term: TermStep, column: number, row: number) {
   const level_state = step.value === STEP_TERM_SELECT_1 ? term1LevelState : term2LevelState
@@ -86,12 +158,17 @@ function handleClickTerm(term: TermStep, column: number, row: number) {
       tutGameAction.value = GameAction.submission_correct
       // mark it completed immediately
       level_state.value.completed_timestamp = Date.now()
+
+      streak.value += 1
+      score.value += 10 * level_state.value.selected.length * streak.value
+
       setTimeout(() => {
         handleNextClick()
       }, RIGHT_ANSWER_TIMEOUT)
     } else {
       // wrong!
       tutGameAction.value = GameAction.submission_incorrect
+      streak.value = 0
       setTimeout(() => {
         level_state.value.selected = []
         tutGameAction.value = GameAction.ready
@@ -120,7 +197,7 @@ const messages: Record<number, string> = {
   [STEP_INTRO]: 'Your goal is to build an equation that connects the start number to the end number',
   [STEP_HUD_START]: 'This is the number you start at',
   [STEP_HUD_TARGET]: 'This is the number you need to end at',
-  [STEP_EQUATION_PATH]: "Your term path will appear here. Let's look at an example",
+  [STEP_EQUATION_PATH]: "Your term path will appear in this middle space. Let's look at an example",
   [STEP_TERM_1]: 'Which of these terms can be applied to the start number in order to equal the end number?',
   [STEP_TERM_1_CONFIRM]: 'You applied the right term to reach the target number',
   [STEP_TERM_2]: "Next you'll need to select two terms: one from each row, starting from the top",
@@ -215,11 +292,11 @@ $overlayColor: rgba(0, 0, 0, 0.7);
     }
 
     &.v-top {
-      top: 20%;
+      top: 30%;
     }
 
     &.v-bottom {
-      top: 80%;
+      top: 70%;
     }
 
     &.h-center {
@@ -268,15 +345,15 @@ $overlayColor: rgba(0, 0, 0, 0.7);
     transform: translate(-50%, -50%);
 
     i {
-      font-size: 5rem;
+      font-size: 4rem;
       color: var(--color-white);
     }
 
     &.v-top {
-      top: 5%;
+      top: 10%;
     }
     &.v-bottom {
-      top: 95%;
+      top: 90%;
     }
     &.h-left {
       left: 20%;

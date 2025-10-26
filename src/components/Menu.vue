@@ -35,10 +35,18 @@ function handleClickTutorial() {
   <div id="menu-content">
     <h1>Quate</h1>
     <div class="buttons-container">
-      <TermButton :is-correct="selectedButton === BUTTON_TUTORIAL" @click="handleClickTutorial()">
+      <TermButton
+        :is-selected="selectedButton === BUTTON_TUTORIAL"
+        :is-correct="selectedButton === BUTTON_TUTORIAL"
+        @click="handleClickTutorial()"
+      >
         <i :class="TUTORIAL" />
       </TermButton>
-      <TermButton :is-correct="selectedButton === BUTTON_PLAY" @click="handleClickPlay()">
+      <TermButton
+        :is-selected="selectedButton === BUTTON_PLAY"
+        :is-correct="selectedButton === BUTTON_PLAY"
+        @click="handleClickPlay()"
+      >
         <i :class="PLAY" />
       </TermButton>
     </div>

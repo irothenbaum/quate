@@ -6,14 +6,40 @@ import {isTransitioningLevel} from '@/utilities.ts'
 import IncrementingNumber from '@/components/utility/IncrementingNumber.vue'
 import {LEVEL, STREAK} from '@/constants/icons.ts'
 import {TRANSITION_TOTAL_MS} from '@/constants/environment.ts'
+import {useTutorialStore} from '@/composables/useTutorialStore.ts'
 
 // Emits definition
 const emit = defineEmits<{
   (e: 'pause'): void
 }>()
 
+const {streak, level, start_number, start_tail_is_selected, tails_are_correct} = useTutorialStore()
 const {levels_completed, streak_count, level_state, game_action} = useGameStore()
-const tailIsSelected = computed<boolean>(() => level_state.value.selected.length > 0)
+
+const renderSettings = computed(() => {
+  return game_action.value === GameAction.tutorial
+    ? {
+        streak: streak.value,
+        level: level.value,
+        start_number: start_number.value,
+        start_tail_is_selected: start_tail_is_selected.value,
+        tails_are_correct: tails_are_correct.value === 1,
+        tails_are_incorrect: tails_are_correct.value === -1,
+        levelTransitionSpeed: 0,
+      }
+    : {
+        streak: streak_count.value,
+        level: levels_completed.value + 1,
+        start_number: level_state.value.start,
+        start_tail_is_selected: level_state.value.selected.length > 0,
+        tails_are_correct:
+          (level_state.value.selected.length > 0 && game_action.value === GameAction.submission_correct) ||
+          isTransitioningLevel(game_action.value),
+        tails_are_incorrect:
+          level_state.value.selected.length > 0 && game_action.value === GameAction.submission_incorrect,
+        levelTransitionSpeed: TRANSITION_TOTAL_MS * 2,
+      }
+})
 </script>
 
 <template>
@@ -21,27 +47,26 @@ const tailIsSelected = computed<boolean>(() => level_state.value.selected.length
     <div class="level-container">
       <div class="container-inner">
         <i :class="LEVEL" />
-        <IncrementingNumber :number="levels_completed + 1" :animation-duration="TRANSITION_TOTAL_MS * 2" />
+        <IncrementingNumber :number="renderSettings.level" :animation-duration="renderSettings.levelTransitionSpeed" />
       </div>
     </div>
     <div
-      v-if="level_state"
       :class="{
         'start-container': true,
-        active: tailIsSelected,
-        correct: (tailIsSelected && game_action === GameAction.submission_correct) || isTransitioningLevel(game_action),
-        incorrect: tailIsSelected && game_action === GameAction.submission_incorrect,
+        active: renderSettings.start_tail_is_selected,
+        correct: renderSettings.tails_are_correct,
+        incorrect: renderSettings.tails_are_incorrect,
       }"
     >
       <div class="start-tail"></div>
       <div class="container-inner">
-        <IncrementingNumber :number="level_state.start" class="start" />
+        <IncrementingNumber :number="renderSettings.start_number" class="start" />
       </div>
     </div>
     <div class="streak-container">
       <div class="container-inner">
         <i :class="STREAK" />
-        {{ streak_count }}
+        {{ renderSettings.streak }}
       </div>
     </div>
   </div>

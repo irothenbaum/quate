@@ -98,13 +98,13 @@ $boxShadowSettings: 0 0 10px 0;
     //left: calc(50% - var(--term-size) / 2);
     //top: 0;
     border-color: var(--color-power);
-    box-shadow: $boxShadowSettings var(--color-power);
+    // box-shadow: $boxShadowSettings var(--color-power);
 
     .term-inner {
       border-color: var(--color-power);
-      box-shadow:
-        $boxShadowSettings var(--color-power),
-        inset $boxShadowSettings var(--color-power);
+      // box-shadow:
+      //   $boxShadowSettings var(--color-power),
+      //   inset $boxShadowSettings var(--color-power);
     }
   }
 
