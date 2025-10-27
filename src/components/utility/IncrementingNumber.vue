@@ -18,22 +18,30 @@ const props = withDefaults(
     animationDelay: 0,
   },
 )
-const displayNumber = ref(props.number)
+const displayNumber = ref(props.number || 0)
+const intervalId = ref<number | null>(null)
+const timeoutId = ref<number | null>(null)
 watch(
   () => props.number,
   newNumber => {
-    setTimeout(() => {
+    if (timeoutId.value) {
+      clearTimeout(timeoutId.value as number)
+      clearInterval(intervalId.value as number)
+      timeoutId.value = null
+    }
+    timeoutId.value = setTimeout(() => {
       const startNumber = displayNumber.value
       const endNumber = newNumber || 0
       const duration = props.animationDuration || TRANSITION_STEP_MS
       const steps = Math.ceil(duration / STEP_TIME)
       let currentStep = 0
 
-      const interval = setInterval(() => {
+      intervalId.value = setInterval(() => {
         currentStep++
         displayNumber.value = startNumber + ((endNumber - startNumber) * currentStep) / steps
         if (currentStep >= steps) {
-          clearInterval(interval)
+          clearInterval(intervalId.value as number)
+          intervalId.value = null
           displayNumber.value = endNumber
         }
 
@@ -46,7 +54,7 @@ watch(
 </script>
 
 <template>
-  <span>{{ formatNumber(displayNumber) }}</span>
+  <span :class="{animating: !!intervalId}">{{ formatNumber(displayNumber) }}</span>
 </template>
 
 <style lang="scss">

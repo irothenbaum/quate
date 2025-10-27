@@ -1,31 +1,12 @@
 import {PrimeIcons} from '@primevue/core/api'
 
-export const INFORMATION: string = PrimeIcons.INFO_CIRCLE
 export const CHECK: string = PrimeIcons.CHECK
-export const EDIT: string = PrimeIcons.PENCIL
-export const WARNING: string = PrimeIcons.EXCLAMATION_TRIANGLE
-export const SPINNER: string = PrimeIcons.SPINNER + ' pi-spin'
-export const MAXIMIZE: string = PrimeIcons.WINDOW_MAXIMIZE
-export const MINIMIZE: string = PrimeIcons.WINDOW_MINIMIZE
-export const LOCKED: string = PrimeIcons.LOCK
-export const BACK: string = PrimeIcons.CHEVRON_LEFT
-export const OPTIONS: string = PrimeIcons.ELLIPSIS_V
-export const PREVIOUS: string = PrimeIcons.ANGLE_DOUBLE_LEFT
-export const NEXT: string = PrimeIcons.ANGLE_DOUBLE_RIGHT
 export const ARROW_DOWN: string = PrimeIcons.CHEVRON_DOWN
 export const ARROW_UP: string = PrimeIcons.CHEVRON_UP
-export const PLUS: string = PrimeIcons.PLUS
-export const CLOSE: string = PrimeIcons.TIMES
-export const TRASH: string = PrimeIcons.TRASH
-export const QUESTION: string = PrimeIcons.QUESTION_CIRCLE
-export const LIST: string = PrimeIcons.LIST
-export const SKIP_DOWN: string = PrimeIcons.ANGLE_DOUBLE_DOWN
-export const SKIP_UP: string = PrimeIcons.ANGLE_DOUBLE_UP
 export const COPY: string = PrimeIcons.CLONE
-export const NOTES: string = PrimeIcons.FILE_EDIT
 export const TIMER: string = PrimeIcons.CLOCK
 export const LEVEL: string = PrimeIcons.CLONE
 export const POINTS: string = PrimeIcons.BOLT
 export const STREAK: string = PrimeIcons.ANGLE_DOUBLE_UP
 export const PLAY: string = PrimeIcons.PLAY
-export const TUTORIAL: string = PrimeIcons.BOOK
+export const TUTORIAL: string = PrimeIcons.QUESTION

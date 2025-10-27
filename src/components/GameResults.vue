@@ -3,24 +3,30 @@ import {onMounted, ref} from 'vue'
 import {LEVEL, TIMER, STREAK, POINTS} from '@/constants/icons.ts'
 import {useGameStore} from '@/composables/useGameStore.ts'
 import IncrementingNumber from '@/components/utility/IncrementingNumber.vue'
-import {HIGH_SCORE_CACHE_KEY} from '@/constants/environment.ts'
+import {HIGH_SCORE_CACHE_KEY, TRANSITION_STEP_MS} from '@/constants/environment.ts'
+
+const TIMER_SHOW_DELAY = 1200
 
 const isHidden = ref<boolean>(true)
 const {levels_completed, score, longest_streak, restartGame} = useGameStore()
 
 const buttonDisabled = ref<boolean>(true)
 
+const finalScore = score.value + longest_streak.value * 10 + levels_completed.value * 10
+const finalScoreRevealDuration = TRANSITION_STEP_MS + finalScore
+
 onMounted(() => {
   setTimeout(() => {
     isHidden.value = false
 
-    const nextHS = Math.max(parseInt(localStorage.getItem(HIGH_SCORE_CACHE_KEY) || '0'), score.value)
+    const previousHS = parseInt(localStorage.getItem(HIGH_SCORE_CACHE_KEY) || '-1')
+    const nextHS = Math.max(previousHS, finalScore)
     localStorage.setItem(HIGH_SCORE_CACHE_KEY, nextHS.toString())
 
     setTimeout(() => {
       buttonDisabled.value = false
-    }, 2000)
-  }, 1200)
+    }, 4000)
+  }, TIMER_SHOW_DELAY)
 })
 
 const timeUpStr = `time up `.repeat(500)
@@ -35,17 +41,27 @@ const timeUpStr = `time up `.repeat(500)
         <ul>
           <li>
             <i :class="LEVEL" />
-            <IncrementingNumber :number="levels_completed" :animation-delay="1000" />
+            <IncrementingNumber :number="isHidden ? 0 : levels_completed" :animation-delay="TIMER_SHOW_DELAY + 500" />
+            <span class="multiplier">x10</span>
           </li>
           <li>
             <i :class="STREAK" />
-            <IncrementingNumber :number="longest_streak" :animation-delay="1000" />
+            <IncrementingNumber :number="isHidden ? 0 : longest_streak" :animation-delay="TIMER_SHOW_DELAY + 1000" />
+            <span class="multiplier">x10</span>
           </li>
           <li>
             <i :class="POINTS" />
-            <IncrementingNumber :number="score" :animation-delay="2000" />
+            <IncrementingNumber :number="isHidden ? 0 : score" :animation-delay="TIMER_SHOW_DELAY + 1500" />
           </li>
         </ul>
+        <div class="total-highscore">
+          <span class="label">Score:</span>
+          <IncrementingNumber
+            :number="isHidden ? 0 : finalScore"
+            :animation-delay="TIMER_SHOW_DELAY + 2000"
+            :animation-duration="finalScoreRevealDuration"
+          />
+        </div>
         <div class="buttons-container">
           <div :class="{button: true, disabled: buttonDisabled}" @click="restartGame()"><span>Main menu</span></div>
         </div>
@@ -100,26 +116,35 @@ const timeUpStr = `time up `.repeat(500)
     text-shadow:
       0 0 10px var(--color-tertiary-shade),
       0 0 4px var(--color-tertiary-dark-shade);
+    overflow: hidden;
 
     ul {
       li {
         @include styles.flex-row();
         margin-bottom: var(--space-md);
         justify-content: flex-start;
-        font-size: 2rem;
+        font-size: var(--font-size-xl);
         line-height: 1.2em;
 
-        i {
+        .multiplier {
+          margin-left: var(--space-sm);
+          font-size: var(--font-size-md);
         }
+      }
+    }
 
-        &:last-child {
-          i {
-            font-size: 1.5rem;
-          }
+    .total-highscore {
+      border-top: 2px solid var(--color-white);
+      margin-top: var(--space-lg);
+      padding-top: var(--space-lg);
+      @include styles.flex-row();
+      font-size: var(--font-size-xxl);
+      font-weight: bold;
+      line-height: 1.2em;
 
-          margin-bottom: 0;
-          font-size: 3rem;
-        }
+      .label {
+        font-weight: normal;
+        font-size: var(--font-size-md);
       }
     }
   }
