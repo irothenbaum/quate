@@ -25,11 +25,10 @@ const renderSettings = computed(() => {
         start_tail_is_selected: start_tail_is_selected.value,
         tails_are_correct: tails_are_correct.value === 1,
         tails_are_incorrect: tails_are_correct.value === -1,
-        levelTransitionDelay: 0,
       }
     : {
         streak: streak_count.value,
-        level: game_action.value === GameAction.menu ? 0 : levels_completed.value + 1,
+        level: [GameAction.menu, GameAction.starting].includes(game_action.value) ? 0 : levels_completed.value + 1,
         start_number: level_state.value.start,
         start_tail_is_selected: level_state.value.selected.length > 0,
         tails_are_correct:
@@ -37,7 +36,7 @@ const renderSettings = computed(() => {
           isTransitioningLevel(game_action.value),
         tails_are_incorrect:
           level_state.value.selected.length > 0 && game_action.value === GameAction.submission_incorrect,
-        levelTransitionDelay: game_action.value === GameAction.menu ? 0 : TRANSITION_TOTAL_MS * 2,
+        levelTransitionDelay: TRANSITION_TOTAL_MS / 2,
       }
 })
 </script>
@@ -48,7 +47,6 @@ const renderSettings = computed(() => {
       <div class="container-inner">
         <i :class="LEVEL" />
         <IncrementingNumber
-          :log="true"
           :number="renderSettings.level"
           :animation-duration="1"
           :animation-delay="renderSettings.levelTransitionDelay"

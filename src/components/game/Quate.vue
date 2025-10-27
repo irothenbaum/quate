@@ -29,16 +29,8 @@ const emit = defineEmits<{
 
 const pathRef = ref<HTMLDivElement | null>(null)
 const hasFirstGuessBonus = ref<boolean>(true)
-const {
-  level_state,
-  levels_completed,
-  difficulty,
-  increaseScore,
-  startNextLevel,
-  game_action,
-  last_game_action,
-  streak_count,
-} = useGameStore()
+const {level_state, levels_completed, increaseScore, startNextLevel, game_action, last_game_action, streak_count} =
+  useGameStore()
 const {force_close} = useTutorialStore()
 
 const maxHeight = ref(0)
@@ -98,7 +90,7 @@ function handleStartGame() {
   updateHeight()
   game_action.value = GameAction.starting
   setTimeout(() => {
-    startNextLevel(generateLevel(0, difficulty.value, 0))
+    startNextLevel(generateLevel(0, 0))
   }, TRANSITION_STEP_MS)
 }
 
@@ -148,7 +140,7 @@ function handleLevelComplete() {
 
   increaseScore(unitPoints, bonusPoints)
 
-  const nextLevel = generateLevel(levels_completed.value + 1, difficulty.value, level_state.value.target)
+  const nextLevel = generateLevel(levels_completed.value + 1, level_state.value.target)
 
   startNextLevel(nextLevel)
   // reset our first guess bonus

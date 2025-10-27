@@ -24,11 +24,7 @@ interface GameState {
   time_remaining_ms: Ref<number> // time remaining in milliseconds
 }
 
-interface GameSettings {
-  difficulty: Ref<number>
-}
-
-interface GameStore extends GameSettings, GameState {
+interface GameStore extends GameState {
   startNextLevel: (l: GameLevel) => void
   increaseScore: (u: number, b: number) => void
   handleClickTerm: (term: TermStep, column: number, row: number) => void

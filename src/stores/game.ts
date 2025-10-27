@@ -24,7 +24,6 @@ export default defineStore('game', () => {
   const unit_score = ref<number>(0)
   const bonus_score = ref<number>(0)
   const solutions = ref<Array<GameLevel>>([])
-  const difficulty = ref<number>(100)
   const game_action = ref<number>(GameAction.menu)
   const time_remaining_ms = ref<number>(60000) // 1 minute start time
   const streak_count = ref<number>(0)
@@ -137,8 +136,6 @@ export default defineStore('game', () => {
     time_remaining_ms,
     streak_count,
     longest_streak,
-
-    difficulty,
 
     startNextLevel,
     increaseScore,

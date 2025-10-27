@@ -2,6 +2,7 @@ import {Operation, GameAction} from '@/types/game.ts'
 import type {TermStep, GameLevel} from '@/types/game.ts'
 import {v4 as uuid} from 'uuid'
 import type {LineCoords} from '@/types/game.ts'
+import {BASE_MAX, MAX_LEVEL_STEP} from '@/constants/environment.ts'
 
 export function shuffleArray<T>(arr: Array<T>): Array<T> {
   const clone = [...arr]
@@ -54,7 +55,10 @@ function isCleaningDividedBy(n: number, d: number): boolean {
   return product === Math.floor(product)
 }
 
-const DIVISORS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].reverse()
+const DIVISORS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+function getDivisorsForLevel(levelNum: number): number[] {
+  return DIVISORS.slice(0, Math.min(Math.round(levelNum / 4), DIVISORS.length))
+}
 
 function getSingleTermStep(levelNum: number, start: number, max: number): TermStep {
   if (max <= 0) {
@@ -77,7 +81,8 @@ function getSingleTermStep(levelNum: number, start: number, max: number): TermSt
         return levelNum >= 8 && startRatio < 0.4 && start > 0
 
       case Operation.divide:
-        return levelNum >= 12 && startRatio > 0.4 && DIVISORS.some(d => isCleaningDividedBy(start, d))
+        const divisors = getDivisorsForLevel(levelNum)
+        return levelNum >= 16 && startRatio > 0.4 && divisors.some(d => isCleaningDividedBy(start, d))
 
       case Operation.raise:
         return start > 1 && levelNum >= 16 && Math.pow(start, 2) < max
@@ -86,10 +91,10 @@ function getSingleTermStep(levelNum: number, start: number, max: number): TermSt
 
   const selectedOperation = validOperations[Math.floor(Math.random() * validOperations.length)]
 
-  return generateTermStep(start, max, selectedOperation)
+  return generateTermStep(start, max, selectedOperation, levelNum)
 }
 
-function generateTermStep(start: number, max: number, op: Operation, decimals: number = 0): TermStep {
+function generateTermStep(start: number, max: number, op: Operation, levelNum: number, decimals: number = 0): TermStep {
   const retVal: TermStep = {
     operation: op,
     number: 0,
@@ -110,8 +115,10 @@ function generateTermStep(start: number, max: number, op: Operation, decimals: n
       break
 
     case Operation.divide:
+      const divisors = getDivisorsForLevel(levelNum)
+      divisors.reverse()
       // find the first (largest) one that cleanly divides it
-      retVal.number = DIVISORS.find(d => isCleaningDividedBy(start, d)) || 2
+      retVal.number = divisors.find(d => isCleaningDividedBy(start, d)) || 2
       break
 
     case Operation.raise:
@@ -156,8 +163,8 @@ const totalTermsSequence = [
   [2, 3, 2],
 ]
 
-export function generateLevelUsingTermSequence(levelNum: number, start: number, difficulty: number): GameLevel {
-  const max = difficulty + 10 * levelNum
+export function generateLevelUsingTermSequence(levelNum: number, start: number): GameLevel {
+  const max = BASE_MAX + MAX_LEVEL_STEP * levelNum
   const sequence = totalTermsSequence[levelNum]
 
   return generateLevelSteps(levelNum, start, max, sequence)
@@ -184,14 +191,12 @@ export function generateLevelSteps(levelNum: number, start: number, max: number,
     steps.push(shuffleArray(thisRow))
   }
 
-  const retVal = {
+  return {
     start: start,
     steps: steps,
     target: target,
     selected: [],
   }
-
-  return retVal
 }
 
 // this function generates levels programmatically.
@@ -201,8 +206,8 @@ export function generateLevelSteps(levelNum: number, start: number, max: number,
 const stepCountInterval = 5
 // every 3 levels we increase the number of terms
 const totalTermInterval = 3
-export function generateLevel(levelNum: number, difficulty: number, start: number): GameLevel {
-  const max = difficulty + 10 * levelNum
+export function generateLevel(levelNum: number, start: number): GameLevel {
+  const max = BASE_MAX + MAX_LEVEL_STEP * levelNum
 
   const stepCount = Math.floor(levelNum / stepCountInterval) + 1
   const totalTerms = Math.ceil(levelNum / totalTermInterval) + 1
@@ -234,14 +239,12 @@ export function generateLevel(levelNum: number, difficulty: number, start: numbe
 
   const mergedSteps = steps.map((s, i) => shuffleArray([...fakes[i], s]))
 
-  const retVal = {
+  return {
     start: start,
     steps: mergedSteps,
     target: target,
     selected: [],
   }
-
-  return retVal
 }
 
 export const operationToLabel = {
