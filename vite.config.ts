@@ -11,6 +11,9 @@ export default defineConfig({
     vue(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,woff,woff2}'], // include all asset files for offline use
+      },
       manifest: {
         name: 'Quate',
         short_name: 'quate',
