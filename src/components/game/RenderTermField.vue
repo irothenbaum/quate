@@ -6,11 +6,17 @@ import Pathway from '@/components/game/Pathway.vue'
 import {GameAction, type GameLevel, type TermStep} from '@/types/game.ts'
 import {getCoordsBetweenNodes, isTransitioningLevel} from '@/utilities.ts'
 
-const props = defineProps<{
-  level_state: GameLevel
-  handleClickTerm: (term: TermStep, column: number, row: number) => void
-  game_action: GameAction
-}>()
+const props = withDefaults(
+  defineProps<{
+    level_state: GameLevel
+    handleClickTerm?: (term: TermStep, column: number, row: number) => void
+    game_action?: GameAction
+  }>(),
+  {
+    game_action: GameAction.ready,
+    handleClickTerm: () => {},
+  },
+)
 
 const {level_state, handleClickTerm, game_action} = toRefs(props)
 

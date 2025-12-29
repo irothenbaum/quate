@@ -10,3 +10,7 @@ export const POINTS: string = PrimeIcons.BOLT
 export const STREAK: string = PrimeIcons.ANGLE_DOUBLE_UP
 export const PLAY: string = PrimeIcons.PLAY
 export const TUTORIAL: string = PrimeIcons.QUESTION
+export const CLOSE: string = PrimeIcons.TIMES
+export const SHOW_ANSWER: string = PrimeIcons.EYE
+export const HIDE_ANSWER: string = PrimeIcons.EYE_SLASH
+export const STAR: string = PrimeIcons.STAR_FILL

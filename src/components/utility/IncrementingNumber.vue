@@ -18,6 +18,11 @@ const props = withDefaults(
     animationDelay: 0,
   },
 )
+
+const emit = defineEmits<{
+  (e: 'update', value: number): void
+}>()
+
 const displayNumber = ref(props.number || 0)
 const intervalId = ref<number | null>(null)
 const timeoutId = ref<number | null>(null)
@@ -46,6 +51,8 @@ watch(
         }
 
         displayNumber.value = Math.round(displayNumber.value)
+
+        emit('update', displayNumber.value)
       }, STEP_TIME)
     }, props.animationDelay)
   },
