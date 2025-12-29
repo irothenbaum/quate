@@ -4,6 +4,7 @@ import {PLAY, TUTORIAL} from '@/constants/icons.ts'
 import {ref} from 'vue'
 import {HIGH_SCORE_CACHE_KEY, TRANSITION_STEP_MS} from '@/constants/environment.ts'
 import IncrementingNumber from '@/components/utility/IncrementingNumber.vue'
+import packageInfo from '../../package.json'
 
 const emits = defineEmits<{
   (e: 'start-game'): void
@@ -53,6 +54,8 @@ function handleClickTutorial() {
 
     <h3>High score:</h3>
     <IncrementingNumber :number="highScore" :animation-duration="1000" />
+
+    <h4 class="version">v {{ packageInfo.version }}</h4>
   </div>
 </template>
 
@@ -91,6 +94,13 @@ function handleClickTutorial() {
       color: var(--color-text);
       transition: color 0.2s ease-in-out;
     }
+  }
+
+  .version {
+    position: absolute;
+    bottom: var(--space-md);
+    right: var(--space-md);
+    font-size: var(--font-size-sm);
   }
 }
 </style>
