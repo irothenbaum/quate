@@ -260,6 +260,7 @@ export const gameActionToClass = {
   [GameAction.ready]: 'ready',
   [GameAction.game_over]: 'game-over',
   [GameAction.tutorial]: 'tutorial',
+  [GameAction.challenge]: 'challenge',
   [GameAction.starting]: 'starting',
   [GameAction.submission_correct]: 'submission-correct',
   [GameAction.submission_incorrect]: 'submission-incorrect',
