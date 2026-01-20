@@ -3,7 +3,7 @@ import {onMounted, ref} from 'vue'
 import {LEVEL, TIMER, STREAK, POINTS, STAR} from '@/constants/icons.ts'
 import {useGameStore} from '@/composables/useGameStore.ts'
 import IncrementingNumber from '@/components/utility/IncrementingNumber.vue'
-import {HIGH_SCORE_CACHE_KEY, TRANSITION_STEP_MS} from '@/constants/environment.ts'
+import {COMPETE_CODE_CACHE_KEY, HIGH_SCORE_CACHE_KEY, TRANSITION_STEP_MS} from '@/constants/environment.ts'
 import LevelReview from '@/components/LevelReview.vue'
 
 const TIMER_SHOW_DELAY = 1200
@@ -18,6 +18,7 @@ const buttonDisabled = ref<boolean>(true)
 
 const finalScore = score.value + longest_streak.value * 10 + levels_completed.value * 10
 const finalScoreRevealDuration = TRANSITION_STEP_MS + finalScore
+const playedWithCode = ref<string>(localStorage.getItem(COMPETE_CODE_CACHE_KEY) || '')
 
 onMounted(() => {
   setTimeout(() => {
@@ -47,6 +48,9 @@ const timeUpStr = `time up `.repeat(500)
     <div id="game-results-inner">
       <i id="clock-icon" :class="TIMER" />
       <div class="results-container">
+        <div v-if="playedWithCode.length > 0" class="played-with-code">
+          challenge: <span>{{ playedWithCode }}</span>
+        </div>
         <h1>Results</h1>
         <ul>
           <li>
@@ -256,6 +260,17 @@ const timeUpStr = `time up `.repeat(500)
   .review-modal-overlay {
     @include styles.overlay();
     z-index: 10;
+  }
+
+  .played-with-code {
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--space-md);
+
+    span {
+      font-weight: bold;
+      font-size: var(--font-size-lg);
+      letter-spacing: 0.2em;
+    }
   }
 }
 

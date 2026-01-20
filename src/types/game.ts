@@ -10,6 +10,7 @@ export enum GameAction {
   menu,
   starting,
   tutorial,
+  challenge,
   ready,
   submission_correct,
   submission_incorrect,

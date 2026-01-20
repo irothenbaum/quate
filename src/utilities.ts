@@ -2,7 +2,7 @@ import {Operation, GameAction} from '@/types/game.ts'
 import type {TermStep, GameLevel} from '@/types/game.ts'
 import {v4 as uuid} from 'uuid'
 import type {LineCoords} from '@/types/game.ts'
-import {BASE_MAX, MAX_LEVEL_STEP} from '@/constants/environment.ts'
+import {BASE_MAX, COMPETE_CODE_CACHE_KEY, MAX_LEVEL_STEP} from '@/constants/environment.ts'
 
 export function shuffleArray<T>(arr: Array<T>): Array<T> {
   const clone = [...arr]
@@ -11,7 +11,7 @@ export function shuffleArray<T>(arr: Array<T>): Array<T> {
   // While there remain elements to shuffle...
   while (currentIndex != 0) {
     // Pick a remaining element...
-    const randomIndex = Math.floor(Math.random() * currentIndex)
+    const randomIndex = Math.floor(dRandom() * currentIndex)
     currentIndex--
 
     // And swap it with the current element.
@@ -89,7 +89,7 @@ function getSingleTermStep(levelNum: number, start: number, max: number): TermSt
     }
   }) as Array<Operation>
 
-  const selectedOperation = validOperations[Math.floor(Math.random() * validOperations.length)]
+  const selectedOperation = validOperations[Math.floor(dRandom() * validOperations.length)]
 
   return generateTermStep(start, max, selectedOperation, levelNum)
 }
@@ -103,15 +103,15 @@ function generateTermStep(start: number, max: number, op: Operation, levelNum: n
 
   switch (op) {
     case Operation.add:
-      retVal.number = Math.random() * (max - start)
+      retVal.number = dRandom() * (max - start)
       break
 
     case Operation.subtract:
-      retVal.number = Math.random() * (start - 1) + 1
+      retVal.number = dRandom() * (start - 1) + 1
       break
 
     case Operation.multiply:
-      retVal.number = Math.random() * (max / start)
+      retVal.number = dRandom() * (max / start)
       break
 
     case Operation.divide:
@@ -185,7 +185,7 @@ export function generateLevelSteps(levelNum: number, start: number, max: number,
 
     // now we create all the fake values (we number the number of terms this row - 1 because 1 is the correct term)
     for (let j = totalTermsThisRow - 1; j > 0; j--) {
-      thisRow.push(getSingleTermStep(levelNum, start, Math.floor(Math.random() * max) + 20))
+      thisRow.push(getSingleTermStep(levelNum, start, Math.floor(dRandom() * max) + 20))
     }
 
     steps.push(shuffleArray(thisRow))
@@ -230,8 +230,8 @@ export function generateLevel(levelNum: number, start: number): GameLevel {
     // the row with the most fakes should not be more than 2 greater than the smallest
     const viable = fakes.filter(arr => arr.length < minFakeMagnitude + 2)
 
-    const nextFakeRow = Math.floor(Math.random() * viable.length)
-    viable[nextFakeRow].push(getSingleTermStep(levelNum, start, Math.floor(Math.random() * max) + 20))
+    const nextFakeRow = Math.floor(dRandom() * viable.length)
+    viable[nextFakeRow].push(getSingleTermStep(levelNum, start, Math.floor(dRandom() * max) + 20))
 
     minFakeMagnitude = fakes.reduce((agr, f) => Math.min(agr, f.length), viable[nextFakeRow].length)
     numberOfFakes--
@@ -318,4 +318,45 @@ export function getCoordsBetweenNodes(
 
 export function formatNumber(n: number): string {
   return n.toLocaleString(undefined, {maximumFractionDigits: 2})
+}
+
+// Deterministic random state
+let dRandomState: number | null = null
+let dRandomLastCode: string | null = null
+
+function seedToNumber(seed: string): number {
+  let hash = 0
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i)
+    hash = (hash << 5) - hash + char
+    hash = hash & hash // Convert to 32-bit integer
+  }
+  return Math.abs(hash)
+}
+
+// Mulberry32 PRNG - fast and produces good distribution
+function mulberry32(): number {
+  if (dRandomState === null) return Math.random()
+  dRandomState += 0x6d2b79f5
+  let t = dRandomState
+  t = Math.imul(t ^ (t >>> 15), t | 1)
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+}
+
+export function dRandom(): number {
+  const competeCode = localStorage.getItem(COMPETE_CODE_CACHE_KEY)
+
+  if (competeCode) {
+    // Reset state if the code changed
+    if (competeCode !== dRandomLastCode) {
+      dRandomState = seedToNumber(competeCode)
+      dRandomLastCode = competeCode
+    }
+    return mulberry32()
+  } else {
+    dRandomState = null
+    dRandomLastCode = null
+    return Math.random()
+  }
 }

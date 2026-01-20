@@ -9,6 +9,7 @@ import {applyTermStep, generateLevel, gameActionToClass, applyTermSteps} from '@
 import {GameAction} from '@/types/game.ts'
 import Menu from '@/components/Menu.vue'
 import Tutorial from '@/components/Tutorial.vue'
+import Challenge from '@/components/Challenge.vue'
 import {
   FAST_RESPONSE_TIME_S,
   MAX_STREAK,
@@ -18,6 +19,7 @@ import {
   STREAK_BONUS_RATIO,
   WRONG_ANSWER_TIMEOUT,
   TRANSITION_RESULTS_MS,
+  COMPETE_CODE_CACHE_KEY,
 } from '@/constants/environment.ts'
 import GameResults from '@/components/GameResults.vue'
 import {useTutorialStore} from '@/composables/useTutorialStore.ts'
@@ -63,7 +65,7 @@ onMounted(() => {
   })
 })
 
-function handleTutorialComplete() {
+function handleBackToMenu() {
   game_action.value = GameAction.starting
   force_close.value = true
   setTimeout(() => {
@@ -80,6 +82,18 @@ function handleStartTutorial() {
   force_close.value = true
   setTimeout(() => {
     game_action.value = GameAction.tutorial
+    setTimeout(() => {
+      force_close.value = false
+    }, TRANSITION_STEP_MS)
+  }, TRANSITION_STEP_MS)
+}
+
+function handleStartChallenge() {
+  updateHeight()
+  game_action.value = GameAction.starting
+  force_close.value = true
+  setTimeout(() => {
+    game_action.value = GameAction.challenge
     setTimeout(() => {
       force_close.value = false
     }, TRANSITION_STEP_MS)
@@ -173,10 +187,17 @@ function handleTimeExpired() {
         >
           <div id="path-inner" :style="{height: maxHeight + 'px'}">
             <template v-if="game_action === GameAction.menu || last_game_action === GameAction.menu">
-              <Menu @start-game="handleStartGame()" @start-tutorial="handleStartTutorial()" />
+              <Menu
+                @start-game="handleStartGame()"
+                @start-tutorial="handleStartTutorial()"
+                @start-challenge="handleStartChallenge()"
+              />
             </template>
             <template v-else-if="game_action === GameAction.tutorial || last_game_action === GameAction.tutorial">
-              <Tutorial @tutorial-complete="handleTutorialComplete()" />
+              <Tutorial @tutorial-complete="handleBackToMenu()" />
+            </template>
+            <template v-if="game_action === GameAction.challenge || last_game_action === GameAction.challenge">
+              <Challenge @start-game="handleStartGame()" @go-back="handleBackToMenu()" />
             </template>
             <template v-else>
               <EquationPath />

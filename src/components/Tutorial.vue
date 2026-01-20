@@ -73,6 +73,7 @@ watch(
 )
 
 function handleNextClick() {
+  console.log('HERE')
   if (step.value === STEP_BYE_BYE) {
     emits('tutorial-complete')
     return
@@ -272,9 +273,6 @@ const arrowClasses: Record<number, string> = {
 $overlayColor: rgba(0, 0, 0, 0.7);
 
 #tutorial-content {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
 

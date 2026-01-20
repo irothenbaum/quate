@@ -14,12 +14,14 @@ const props = withDefaults(
     error?: boolean
     readonly?: boolean
     lines?: number
+    maxlength?: number
   }>(),
   {
     modelValue: '',
     error: false,
     readonly: false,
     lines: 1,
+    maxlength: undefined,
   },
 )
 
@@ -39,6 +41,7 @@ const emit = defineEmits<{
         variant="filled"
         :invalid="error"
         :readonly="readonly"
+        :maxlength="maxlength"
         @update:modelValue="(v: string | undefined) => emit('update:modelValue', v)"
       />
       <Textarea
@@ -49,6 +52,7 @@ const emit = defineEmits<{
         :rows="lines"
         :invalid="error"
         :readonly="readonly"
+        :maxlength="maxlength"
         @update:modelValue="(v: string | undefined) => emit('update:modelValue', v)"
       />
       <label :for="id">{{ label }}</label>

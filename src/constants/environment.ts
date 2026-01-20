@@ -17,6 +17,7 @@ export const WRONG_ANSWER_TIMEOUT = 2000 // ms to show wrong answer
 export const RIGHT_ANSWER_TIMEOUT = 1000 // ms to show right answer
 
 export const HIGH_SCORE_CACHE_KEY = 'QUATE_high_score'
+export const COMPETE_CODE_CACHE_KEY = 'QUATE_compete_code'
 
 export const BASE_MAX = 20
 export const MAX_LEVEL_STEP = 5
