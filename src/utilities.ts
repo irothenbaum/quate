@@ -351,13 +351,20 @@ export function dRandom(): number {
   if (competeCode) {
     // Reset state if the code changed
     if (competeCode !== dRandomLastCode) {
-      dRandomState = seedToNumber(competeCode)
-      dRandomLastCode = competeCode
+      resetSeed()
     }
     return mulberry32()
   } else {
     dRandomState = null
     dRandomLastCode = null
     return Math.random()
+  }
+}
+
+export function resetSeed(): void {
+  const competeCode = localStorage.getItem(COMPETE_CODE_CACHE_KEY)
+  if (competeCode) {
+    dRandomState = seedToNumber(competeCode)
+    dRandomLastCode = competeCode
   }
 }

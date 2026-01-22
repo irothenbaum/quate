@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import TermButton from '@/components/game/TermButton.vue'
 import {PLAY, TUTORIAL, CHALLENGE} from '@/constants/icons.ts'
-import {ref} from 'vue'
+import {onMounted, ref} from 'vue'
 import {COMPETE_CODE_CACHE_KEY, HIGH_SCORE_CACHE_KEY, TRANSITION_STEP_MS} from '@/constants/environment.ts'
 import IncrementingNumber from '@/components/utility/IncrementingNumber.vue'
 import packageInfo from '../../package.json'
+import {resetSeed} from '@/utilities.ts'
 
 const emits = defineEmits<{
   (e: 'start-game'): void
@@ -41,6 +42,11 @@ function handleClickChallenge() {
     emits('start-challenge')
   }, TRANSITION_STEP_MS)
 }
+
+// reset seed everytime we return to Menu
+onMounted(() => {
+  resetSeed()
+})
 </script>
 
 <template>
