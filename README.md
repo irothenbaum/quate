@@ -1,3 +1,3 @@
-# quate
+# WebApp Template
 
-A math path gaming
+Basic set up for a vue3 typescript web application.
