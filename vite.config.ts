@@ -15,8 +15,8 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,woff,woff2}'], // include all asset files for offline use
       },
       manifest: {
-        name: 'Quate',
-        short_name: 'quate',
+        name: 'Game',
+        short_name: 'game',
         start_url: './index.html',
         scope: './',
         display: 'standalone',

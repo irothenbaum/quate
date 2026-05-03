@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import Quate from '@/components/game/Quate.vue'
 </script>
 
 <template>
-  <Quate />
+  <!-- Main Game file goes here -->
 </template>
 
 <style scoped lang="scss">
