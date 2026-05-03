@@ -1,7 +1,7 @@
 {
-  "name": "Steel Neil",
-  "short_name": "steelneil",
-  "start_url": "/athlete",
+  "name": "Template",
+  "short_name": "template",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
